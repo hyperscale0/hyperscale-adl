@@ -65,11 +65,11 @@ and which provider needed it.
 
 ## Contributor license agreement
 
-In the rare case Hyperscale accepts a pull request, the author signs a CLA
-first, and it only has to happen once. The AGPL alone does not let Hyperscale
-LLC offer the contribution under the commercial license it sells alongside it,
-and the AGPL says nothing about patents, so the patent terms live in the CLA
-too.
+In the rare case Hyperscale accepts a pull request, the author signs
+[the CLA](CLA.md) first, and it only has to happen once. The AGPL alone does
+not let Hyperscale LLC offer the contribution under the commercial license it
+sells alongside it, and the AGPL says nothing about patents, so the patent
+terms live in the CLA too.
 
 ## Conduct
 
