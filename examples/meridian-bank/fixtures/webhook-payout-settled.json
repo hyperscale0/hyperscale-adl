@@ -1,0 +1,11 @@
+{
+  "kind": "notification",
+  "eventKind": "payout.settled",
+  "payload": {
+    "payoutId": "pyt_01HQ8",
+    "providerReference": "MER-9F3K2",
+    "valueDate": "2026-03-03",
+    "chargeAmount": "1.50",
+    "completedAt": "2026-03-03T09:04:41Z"
+  }
+}

@@ -1,0 +1,42 @@
+name: Feature request
+description: A provider cannot be described with the fields ADL has today.
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The bar for a new field is a provider that cannot be described without
+        it, and a runtime that has to guess in its absence. Please answer both
+        below.
+  - type: textarea
+    id: provider
+    attributes:
+      label: The provider behavior
+      description: >
+        What the provider does that the declaration cannot say. Describe the
+        behavior, not the bank. No names or endpoints needed.
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: What breaks without it
+      description: >
+        The operational failure a generic runtime hits when it guesses: a
+        double payment, an unexplained statement line, a payout stuck in
+        received, a reconciliation that never closes.
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: The shape you have in mind
+      description: >
+        Optional. A field, a vocabulary value, a conformance code. Say which
+        of the four gates would enforce it.
+      render: typescript
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do today
+      description: Optional. How you work around it now, and what that costs.

@@ -1,0 +1,26 @@
+{
+  "kind": "command",
+  "operation": "payout.submit",
+  "request": {
+    "method": "POST",
+    "path": "/v2/payments",
+    "body": {
+      "instructionId": "HS-INS-0007",
+      "endToEndId": "HS-E2E-0007",
+      "paymentReference": "HS-PAY-0007",
+      "amount": "2500.00",
+      "currency": "EUR",
+      "creditorName": "Acme Ltd",
+      "creditorAccount": "IE29MERI93115212345678",
+      "requestedValueDate": "2026-03-03"
+    }
+  },
+  "response": {
+    "httpStatus": 202,
+    "body": {
+      "providerReference": "MER-9F3K2",
+      "status": "QUEUED",
+      "receivedAt": "2026-03-02T13:20:05Z"
+    }
+  }
+}

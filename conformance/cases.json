@@ -1,0 +1,835 @@
+{
+  "description": "The conformance corpus. Each case takes the certified base declaration, breaks exactly one fact, and records what each gate says about the result: `load` is registry validation (createProviderAdapterRegistry), `conformance` is partnerBankConformanceFindings, `schema` is spec/manifest.schema.json. Where two gates disagree, `note` says why. Read this file to see every rule and what trips it. test/conformance-cases.spec.ts runs it and fails if any conformance code goes unexercised.",
+  "base": "examples/meridian-bank -- meridianAdapters[0], the payout_execution adapter",
+  "mutations": "`set` writes a value at a path (array of keys, because operation names contain dots) and runs before `delete`, which removes a path.",
+  "cases": [
+    {
+      "id": "base-certifies",
+      "title": "the base declaration certifies with no findings",
+      "why": "The corpus is worthless if the base is not clean: every case below reads as one broken fact against a green baseline.",
+      "mutate": {},
+      "load": "accepts",
+      "conformance": [],
+      "schema": "accepts"
+    },
+    {
+      "id": "profile-missing",
+      "title": "no partner-bank profile at all",
+      "why": "Without the profile none of the bank facts exist, so the runtime has nothing to poll, classify, or reconcile from.",
+      "mutate": { "delete": [["profile"]] },
+      "load": "accepts",
+      "conformance": ["partner_bank_profile_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "profile-missing-still-checks-the-declaration",
+      "title": "a missing profile leads, and the declaration checks still run",
+      "why": "One run must report everything it can see; a missing profile is not a licence to stop reading the rest.",
+      "mutate": {
+        "set": [{ "path": ["bindings"], "value": {} }],
+        "delete": [["profile"]]
+      },
+      "load": "accepts",
+      "conformance": [
+        "partner_bank_profile_missing",
+        "resource_binding_missing"
+      ],
+      "schema": "accepts"
+    },
+    {
+      "id": "operation-map-empty",
+      "title": "no operations are bound",
+      "why": "An adapter with no commands serves nothing, and every command-level rule below would be vacuously green.",
+      "mutate": { "set": [{ "path": ["operationMap"], "value": {} }] },
+      "load": "accepts",
+      "conformance": ["operation_map_empty", "required_operation_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "envelope-unclassified",
+      "title": "a live command with no response envelope class",
+      "why": "Without a class the runtime cannot tell acceptance from rejection, and a rejection read as silence strands money in flight.",
+      "mutate": {
+        "delete": [["operationMap", "payout.submit", "envelope"]]
+      },
+      "load": "accepts",
+      "conformance": ["response_envelope_unclassified"],
+      "schema": "accepts"
+    },
+    {
+      "id": "envelope-unconfirmed",
+      "title": "the envelope class is declared unconfirmed",
+      "why": "`unconfirmed_until_live` is the honest authoring state for a provider that publishes no error sample, and certification is the licence to serve live.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["operationMap", "payout.submit", "envelope"],
+            "value": "unconfirmed_until_live"
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["response_envelope_unconfirmed"],
+      "schema": "accepts"
+    },
+    {
+      "id": "status-enquiry-missing",
+      "title": "a tenant-initiated REST command with no status enquiry",
+      "why": "A submit whose response is lost can then only be resolved by guessing or resubmitting, and resubmitting pays twice.",
+      "mutate": {
+        "delete": [["operationMap", "payout.submit", "statusEnquiry"]]
+      },
+      "load": "accepts",
+      "conformance": ["status_enquiry_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "status-enquiry-exempt-under-sync-clearance",
+      "title": "sync clearance carries its truth in band",
+      "why": "The exemption is earned by the egress mode: a synchronous clearance answers in the same exchange, so there is no lost response to re-read.",
+      "mutate": {
+        "set": [{ "path": ["egress"], "value": "sync_clearance" }],
+        "delete": [["operationMap", "payout.submit", "statusEnquiry"]]
+      },
+      "load": "accepts",
+      "conformance": [],
+      "schema": "accepts"
+    },
+    {
+      "id": "egress-incoherent-batch-reconcile",
+      "title": "a tenant-initiated command on a file-reconciling adapter",
+      "why": "batch_reconcile performs no per-command outbound call, so the binding promises a call the runtime cannot make.",
+      "mutate": {
+        "set": [{ "path": ["egress"], "value": "batch_reconcile" }],
+        "delete": [["operationMap", "payout.submit", "statusEnquiry"]]
+      },
+      "load": "accepts",
+      "conformance": ["egress_direction_incoherent"],
+      "schema": "accepts"
+    },
+    {
+      "id": "egress-incoherent-none",
+      "title": "a tenant-initiated command on an observation-only adapter",
+      "why": "Same rule, the other silent egress mode: `none` sends the provider nothing at all.",
+      "mutate": {
+        "set": [{ "path": ["egress"], "value": "none" }],
+        "delete": [["operationMap", "payout.submit", "statusEnquiry"]]
+      },
+      "load": "accepts",
+      "conformance": ["egress_direction_incoherent"],
+      "schema": "accepts"
+    },
+    {
+      "id": "status-enquiry-without-rest-egress",
+      "title": "an enquiry plan an adapter has no transport to execute",
+      "why": "An enquiry path on an adapter that performs no REST egress is a plan the runtime can never run.",
+      "mutate": {
+        "set": [
+          { "path": ["egress"], "value": "none" },
+          {
+            "path": ["operationMap", "payout.submit", "direction"],
+            "value": "system_settlement"
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["status_enquiry_without_rest_egress"],
+      "schema": "accepts"
+    },
+    {
+      "id": "lifecycle-terminals-incomplete",
+      "title": "no spelling maps to returned",
+      "why": "A payment ending in a return would be unclassifiable, so the payout polls forever.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "lifecycleVocabulary"],
+            "value": {
+              "QUEUED": "received",
+              "AUTHORISED": "accepted",
+              "SETTLED": "processed",
+              "DECLINED": "failed",
+              "REPLAY_SETTLED": "duplicate_original_succeeded",
+              "REPLAY_DECLINED": "duplicate_original_rejected"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["lifecycle_terminals_incomplete"],
+      "schema": "accepts"
+    },
+    {
+      "id": "lifecycle-intake-missing",
+      "title": "no spelling maps to received or accepted",
+      "why": "An acknowledgement proves the bank took the instruction, never that money moved; with no intake state every ack would have to be graded terminal or dropped.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "lifecycleVocabulary"],
+            "value": {
+              "SETTLED": "processed",
+              "DECLINED": "failed",
+              "RECALLED": "returned",
+              "REPLAY_SETTLED": "duplicate_original_succeeded",
+              "REPLAY_DECLINED": "duplicate_original_rejected"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["lifecycle_intake_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "lifecycle-spelling-blank",
+      "title": "a spelling that trims to nothing",
+      "why": "Runtimes match after trimming and upper-casing, so an empty token can never match anything the bank sends.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "lifecycleVocabulary"],
+            "value": {
+              "QUEUED": "received",
+              "IN_REVIEW": "received",
+              "AUTHORISED": "accepted",
+              "SETTLED": "processed",
+              "DECLINED": "failed",
+              "RECALLED": "returned",
+              "REPLAY_SETTLED": "duplicate_original_succeeded",
+              "REPLAY_DECLINED": "duplicate_original_rejected",
+              "  ": "failed"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["lifecycle_spelling_blank"],
+      "schema": "accepts"
+    },
+    {
+      "id": "lifecycle-spelling-conflict",
+      "title": "two spellings that normalize to one token and disagree",
+      "why": "Whichever the runtime matched first would decide the payment's fate, which makes classification order-dependent.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "lifecycleVocabulary"],
+            "value": {
+              "QUEUED": "received",
+              "AUTHORISED": "accepted",
+              "SETTLED": "processed",
+              "DECLINED": "failed",
+              "RECALLED": "returned",
+              "REPLAY_SETTLED": "duplicate_original_succeeded",
+              "replay_settled ": "duplicate_original_rejected",
+              "REPLAY_DECLINED": "duplicate_original_rejected"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["lifecycle_spelling_conflict"],
+      "schema": "accepts"
+    },
+    {
+      "id": "duplicate-verdicts-unmapped",
+      "title": "the replay verdicts have no spelling",
+      "why": "The dedupe spine is reference-based, so a crash-recovery resubmission comes back as a duplicate verdict; unclassified, it reads as a fresh failure.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "lifecycleVocabulary"],
+            "value": {
+              "QUEUED": "received",
+              "AUTHORISED": "accepted",
+              "SETTLED": "processed",
+              "DECLINED": "failed",
+              "RECALLED": "returned"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["duplicate_verdicts_unmapped"],
+      "schema": "accepts"
+    },
+    {
+      "id": "statement-formats-empty",
+      "title": "no statement format is declared",
+      "why": "Statements are bank truth; without one, reconciliation has nothing to prove the ledger against.",
+      "mutate": {
+        "set": [{ "path": ["profile", "statementFormats"], "value": [] }]
+      },
+      "load": "accepts",
+      "conformance": ["statement_formats_empty"],
+      "schema": "accepts"
+    },
+    {
+      "id": "statement-debit-reference-unestablished",
+      "title": "which reference comes back on a debit is unknown",
+      "why": "Pick the wrong one and every payout the platform instructed reads as an unexplained debit.",
+      "mutate": { "delete": [["profile", "statementDebitReference"]] },
+      "load": "accepts",
+      "conformance": ["statement_debit_reference_unestablished"],
+      "schema": "accepts"
+    },
+    {
+      "id": "statement-window-missing",
+      "title": "a declared format with no fetch window",
+      "why": "The runtime cannot schedule a retrieval it has no window for.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "statementFormats"],
+            "value": ["camt_053", "camt_052", "mt940"]
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["statement_window_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "statement-window-without-paging",
+      "title": "an end-of-day format with no paging facts",
+      "why": "T-1 pages over history, so how far back the archive goes and how many days one request covers are both required.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "statements", "camt_053"],
+            "value": { "availability": "T-1" }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["statement_window_incomplete"],
+      "schema": "accepts"
+    },
+    {
+      "id": "statement-window-availability-unrecognized",
+      "title": "an availability outside the vocabulary",
+      "why": "Every window rule branches on availability, so an unrecognized value must not slide through green.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "statements", "camt_053"],
+            "value": { "availability": "whenever", "lookbackDays": 5 }
+          }
+        ]
+      },
+      "load": {
+        "throws": "windows.statements.camt_053.availability must be one of T-1, today_only"
+      },
+      "conformance": ["statement_window_incomplete"],
+      "schema": "rejects"
+    },
+    {
+      "id": "statement-window-availability-missing",
+      "title": "a truthy window with no availability at all",
+      "why": "TypeScript requires the field; a plain-JSON manifest can omit it, and an availability-less window is unschedulable.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "statements", "camt_053"],
+            "value": { "lookbackDays": 5 }
+          }
+        ]
+      },
+      "load": {
+        "throws": "windows.statements.camt_053.availability must be one of T-1, today_only"
+      },
+      "conformance": ["statement_window_incomplete"],
+      "schema": "rejects"
+    },
+    {
+      "id": "statement-window-lookback-not-positive",
+      "title": "a lookback of zero days",
+      "why": "A window that pages back nothing cannot fetch the history it claims to.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "statements", "camt_053"],
+            "value": {
+              "availability": "T-1",
+              "lookbackDays": 0,
+              "statementDaysPerRequest": 7
+            }
+          }
+        ]
+      },
+      "load": {
+        "throws": "windows.statements.camt_053.lookbackDays must be a positive integer"
+      },
+      "conformance": ["statement_window_incomplete"],
+      "schema": "rejects"
+    },
+    {
+      "id": "charges-unestablished",
+      "title": "the bank's charge billing is unmodeled",
+      "why": "The bank's own charge debits would land as unexplained statement lines.",
+      "mutate": { "delete": [["profile", "charges"]] },
+      "load": "accepts",
+      "conformance": ["charges_unestablished"],
+      "schema": "accepts"
+    },
+    {
+      "id": "charge-narrative-unestablished",
+      "title": "post-hoc charges with no wording to recognize them by",
+      "why": "A post-hoc charge arrives as a bank-initiated debit recognizable only by its narrative.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "charges"],
+            "value": {
+              "narratives": { "charge": [], "vat": ["MERIDIAN TAX"] },
+              "posting": "post_hoc",
+              "vat": "separate_line"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["charge_narrative_unestablished"],
+      "schema": "accepts"
+    },
+    {
+      "id": "vat-narrative-unestablished",
+      "title": "a separate tax line with no wording to recognize it by",
+      "why": "A separate VAT line is its own debit with its own wording.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "charges"],
+            "value": {
+              "narratives": { "charge": ["MERIDIAN FEE"], "vat": [] },
+              "posting": "post_hoc",
+              "vat": "separate_line"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["vat_narrative_unestablished"],
+      "schema": "accepts"
+    },
+    {
+      "id": "charges-netted-need-no-narrative",
+      "title": "charges netted at instruction, tax folded in",
+      "why": "Nothing posts separately, so there is no debit to recognize and no narrative to declare.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "charges"],
+            "value": {
+              "posting": "at_instruction",
+              "vat": "included_in_charge"
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": [],
+      "schema": "accepts"
+    },
+    {
+      "id": "value-date-offset-fractional",
+      "title": "a value date offset of a day and a half",
+      "why": "Value dates are whole banking days; a fraction would be NaN in every comparison that follows.",
+      "mutate": {
+        "set": [
+          {
+            "path": [
+              "profile",
+              "windows",
+              "paymentCutoff",
+              "afterCutoffValueDate"
+            ],
+            "value": "D+1.5"
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["value_date_offset_invalid"],
+      "schema": "rejects",
+      "note": "The schema encodes the D+<days> shape as a pattern; registry load does not read the offsets at all, so conformance is the gate that catches this in TypeScript."
+    },
+    {
+      "id": "value-date-offset-wrong-prefix",
+      "title": "a T+1 offset where D+ is the vocabulary",
+      "why": "The template literal type stops this in TypeScript and nothing stops it in a JSON manifest.",
+      "mutate": {
+        "set": [
+          {
+            "path": [
+              "profile",
+              "windows",
+              "paymentCutoff",
+              "beforeCutoffValueDate"
+            ],
+            "value": "T+1"
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["value_date_offset_invalid"],
+      "schema": "rejects",
+      "note": "Same split as value-date-offset-fractional: pattern in the schema, rule in conformance, silence at registry load."
+    },
+    {
+      "id": "cutoff-timezone-invalid",
+      "title": "a cutoff read on a zone that does not exist",
+      "why": "The cutoff is the bank's wall clock; an unreadable zone means every value date is computed somewhere else.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "paymentCutoff", "timeZone"],
+            "value": "Mars/Phobos"
+          }
+        ]
+      },
+      "load": {
+        "throws": "windows.paymentCutoff.timeZone must be a valid IANA time zone"
+      },
+      "conformance": ["cutoff_clock_invalid"],
+      "schema": "accepts",
+      "note": "JSON Schema cannot check an IANA zone name; the schema only requires a string. Both runtime gates resolve it through Intl.DateTimeFormat."
+    },
+    {
+      "id": "cutoff-timezone-missing",
+      "title": "no time zone at all",
+      "why": "Intl.DateTimeFormat reads an undefined zone as the host's, so absence would silently schedule the cutoff on the platform's clock.",
+      "mutate": {
+        "delete": [["profile", "windows", "paymentCutoff", "timeZone"]]
+      },
+      "load": {
+        "throws": "windows.paymentCutoff.timeZone must be a valid IANA time zone"
+      },
+      "conformance": ["cutoff_clock_invalid"],
+      "schema": "rejects"
+    },
+    {
+      "id": "cutoff-time-not-a-clock",
+      "title": "a cutoff time written in words",
+      "why": "The runtime compares HH:MM; prose compares as never.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "paymentCutoff", "time"],
+            "value": "half past nine"
+          }
+        ]
+      },
+      "load": { "throws": "windows.paymentCutoff.time must be HH:MM" },
+      "conformance": ["cutoff_clock_invalid"],
+      "schema": "rejects"
+    },
+    {
+      "id": "cutoff-window-regressions",
+      "title": "missing the cutoff moves value earlier, and past the forward window",
+      "why": "Two independent facts, reported independently on one run: a later cutoff can only push value later, and the bank must be able to honor its own after-cutoff date.",
+      "mutate": {
+        "set": [
+          {
+            "path": [
+              "profile",
+              "windows",
+              "paymentCutoff",
+              "beforeCutoffValueDate"
+            ],
+            "value": "D+5"
+          },
+          {
+            "path": [
+              "profile",
+              "windows",
+              "paymentCutoff",
+              "afterCutoffValueDate"
+            ],
+            "value": "D+2"
+          },
+          {
+            "path": ["profile", "windows", "valueDateMaxDaysAhead"],
+            "value": 1
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["cutoff_window_regression", "cutoff_window_regression"],
+      "schema": "accepts"
+    },
+    {
+      "id": "value-date-window-not-positive",
+      "title": "a forward window of zero days",
+      "why": "The bank must be able to honor the after-cutoff value date it declares.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "windows", "valueDateMaxDaysAhead"],
+            "value": 0
+          }
+        ]
+      },
+      "load": {
+        "throws": "windows.valueDateMaxDaysAhead must be a positive integer"
+      },
+      "conformance": ["cutoff_window_regression"],
+      "schema": "rejects"
+    },
+    {
+      "id": "resource-binding-missing",
+      "title": "a settled resource kind with no binding mode",
+      "why": "Provider facts commit onto platform resources through a declared match mode; without one the bank's answer has no lawful way to land.",
+      "mutate": { "set": [{ "path": ["bindings"], "value": {} }] },
+      "load": "accepts",
+      "conformance": ["resource_binding_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "webhook-resource-binding-missing",
+      "title": "a webhook plan for a resource kind the adapter does not bind",
+      "why": "The webhook arm of the same rule: a plan names a resource, so that resource needs a binding mode too.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["webhookMap"],
+            "value": {
+              "deposit.received": {
+                "eventKind": "deposit.received",
+                "operationName": "deposit.record",
+                "requiredPayloadFields": ["amount"],
+                "optionalPayloadFields": [],
+                "requiredFieldGroups": [],
+                "resourceIdField": "depositId",
+                "resourceKind": "deposit",
+                "timestampField": "receivedAt"
+              }
+            }
+          }
+        ]
+      },
+      "load": "accepts",
+      "conformance": ["resource_binding_missing"],
+      "schema": "accepts"
+    },
+    {
+      "id": "lifecycle-vocabulary-empty",
+      "title": "a profile with no lifecycle vocabulary",
+      "why": "Nothing the bank says could be classified at all.",
+      "mutate": {
+        "set": [{ "path": ["profile", "lifecycleVocabulary"], "value": {} }]
+      },
+      "load": { "throws": "partner-bank profile has no lifecycle vocabulary" },
+      "conformance": [
+        "lifecycle_terminals_incomplete",
+        "lifecycle_intake_missing",
+        "duplicate_verdicts_unmapped"
+      ],
+      "schema": "rejects"
+    },
+    {
+      "id": "dedupe-keys-empty",
+      "title": "an idempotency spine with no dedupe keys",
+      "why": "The spine is what makes a resubmission answerable; empty, every recovery is a fresh payment.",
+      "mutate": {
+        "set": [
+          { "path": ["profile", "idempotencySpine", "dedupeKeys"], "value": [] }
+        ]
+      },
+      "load": { "throws": "idempotencySpine.dedupeKeys is empty" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "dedupe-keys-duplicated",
+      "title": "the same dedupe key listed twice",
+      "why": "The list widened from a fixed triple, so it now carries the guarantees the tuple used to give for free.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "idempotencySpine", "dedupeKeys"],
+            "value": ["instructionId", "instructionId"]
+          }
+        ]
+      },
+      "load": { "throws": "idempotencySpine.dedupeKeys contains duplicates" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "spine-max-length-not-positive",
+      "title": "a reference length of zero",
+      "why": "A reference that cannot hold a character cannot carry the spine.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "idempotencySpine", "instructionId"],
+            "value": { "maxLength": 0 }
+          }
+        ]
+      },
+      "load": {
+        "throws": "idempotencySpine.instructionId.maxLength must be a positive integer"
+      },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "notification-mechanisms-without-poll",
+      "title": "a bank we would only hear from by callback",
+      "why": "Poll-first is the portable floor: a callback is at best a hint that a poll is due, never a fact to post from.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["profile", "notificationMechanisms"],
+            "value": ["webhook"]
+          }
+        ]
+      },
+      "load": { "throws": "partner-bank profile must support polling" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "credential-locator-blank",
+      "title": "an environment locator that names nothing",
+      "why": "ADL stores locators, never values, so a blank locator is the whole credential gone.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["config", "credentialRef"],
+            "value": { "source": "environment", "name": " " }
+          }
+        ]
+      },
+      "load": { "throws": "config.credentialRef.name must not be blank" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "keychain-locator-blank",
+      "title": "a keychain locator missing its account",
+      "why": "Same rule on the other locator shape.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["config", "credentialRef"],
+            "value": {
+              "source": "keychain",
+              "account": "  ",
+              "service": "meridian"
+            }
+          }
+        ]
+      },
+      "load": { "throws": "config.credentialRef.account must not be blank" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "base-url-not-absolute",
+      "title": "a base URL that is only a path",
+      "why": "The runtime joins operation paths onto this; a relative base resolves against nothing.",
+      "mutate": {
+        "set": [{ "path": ["config", "baseUrl"], "value": "/v2" }]
+      },
+      "load": { "throws": "config.baseUrl must be an absolute URL" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "provider-key-invalid",
+      "title": "a provider key with spaces and capitals",
+      "why": "The key is an identity used in logs, metrics, and the registry; it is lowercase and machine-shaped.",
+      "mutate": {
+        "set": [{ "path": ["provider"], "value": "Meridian Bank" }]
+      },
+      "load": { "throws": "invalid provider key Meridian Bank" },
+      "conformance": [],
+      "schema": "rejects"
+    },
+    {
+      "id": "operation-map-key-drift",
+      "title": "an operation map key that does not match its binding",
+      "why": "The key is how the runtime looks the binding up; drift means the runtime finds nothing under the name it holds.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["operationMap"],
+            "value": {
+              "submit": {
+                "operation": "payout.submit",
+                "direction": "tenant_initiated",
+                "obligationKind": "payout_submission",
+                "resourceIdPath": "payoutId",
+                "resourceKind": "payout",
+                "envelope": "http_status_error_body",
+                "statusEnquiry": {
+                  "keys": "provider_reference",
+                  "pathTemplate": "/v2/payments/{providerReference}"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "load": {
+        "throws": "operationMap key submit must match operation payout.submit"
+      },
+      "conformance": ["required_operation_missing"],
+      "schema": "accepts",
+      "note": "JSON Schema has no way to require a property's key to equal a value inside it, so this one is registry-load only."
+    },
+    {
+      "id": "webhook-map-key-drift",
+      "title": "a webhook map key that does not match its event kind",
+      "why": "Same reason as the operation map: the key is the lookup.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["webhookMap"],
+            "value": {
+              "wrong": {
+                "eventKind": "payout.settled",
+                "operationName": "payout.complete",
+                "requiredPayloadFields": ["providerReference"],
+                "optionalPayloadFields": [],
+                "requiredFieldGroups": [],
+                "resourceIdField": "payoutId",
+                "resourceKind": "payout",
+                "timestampField": "completedAt"
+              }
+            }
+          }
+        ]
+      },
+      "load": {
+        "throws": "webhookMap key wrong must match eventKind payout.settled"
+      },
+      "conformance": [],
+      "schema": "accepts",
+      "note": "Key-equals-value again: expressible in the validator, not in the schema."
+    },
+    {
+      "id": "status-enquiry-path-without-placeholder",
+      "title": "an enquiry path with nowhere to put the reference",
+      "why": "The runtime substitutes the declared key into the template; without the placeholder it would call the same URL for every payment.",
+      "mutate": {
+        "set": [
+          {
+            "path": ["operationMap", "payout.submit", "statusEnquiry"],
+            "value": {
+              "keys": "provider_reference",
+              "pathTemplate": "/v2/payments/{id}"
+            }
+          }
+        ]
+      },
+      "load": {
+        "throws": "payout.submit.statusEnquiry.pathTemplate must include {providerReference}"
+      },
+      "conformance": [],
+      "schema": "rejects"
+    }
+  ]
+}

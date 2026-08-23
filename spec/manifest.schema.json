@@ -1,0 +1,757 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/hyperscale0/hyperscale-adl/main/spec/manifest.schema.json",
+  "title": "Hyperscale provider adapter manifest",
+  "description": "One provider adapter declaration. Generated from src/vocabulary.ts by scripts/emit-spec.ts; edit that, never this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bindings",
+    "capability",
+    "config",
+    "egress",
+    "operationMap",
+    "provider",
+    "webhookMap"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,79}$"
+    },
+    "capability": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "egress": {
+      "type": "string",
+      "enum": [
+        "none",
+        "rest",
+        "batch_reconcile",
+        "sync_clearance"
+      ]
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "strict",
+          "claim",
+          "confirmation_only",
+          "evidence_only"
+        ]
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "credentialRef": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "source"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "\\S"
+                },
+                "source": {
+                  "const": "environment"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "account",
+                "service",
+                "source"
+              ],
+              "properties": {
+                "account": {
+                  "type": "string",
+                  "pattern": "\\S"
+                },
+                "service": {
+                  "type": "string",
+                  "pattern": "\\S"
+                },
+                "source": {
+                  "const": "keychain"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "operationMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/operationBinding"
+      }
+    },
+    "webhookMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/webhookTransitionPlan"
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auth",
+        "executedReadBack",
+        "financialAddressProvisioning",
+        "idempotencySpine",
+        "kind",
+        "lifecycleVocabulary",
+        "limitFacts",
+        "notificationMechanisms",
+        "statementFormats",
+        "windows",
+        "wireCodec"
+      ],
+      "properties": {
+        "kind": {
+          "const": "partner_bank"
+        },
+        "wireCodec": {
+          "type": "string",
+          "enum": [
+            "rest_json",
+            "iso20022_xml",
+            "swift_mt"
+          ]
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "envelope",
+            "signing"
+          ],
+          "properties": {
+            "envelope": {
+              "type": "string",
+              "enum": [
+                "oauth2_client_credentials",
+                "oauth2_password",
+                "bearer_out_of_band",
+                "mutual_tls",
+                "signed_file"
+              ]
+            },
+            "signing": {
+              "type": "string",
+              "enum": [
+                "jws",
+                "detached_signature",
+                "signed_file"
+              ]
+            }
+          }
+        },
+        "charges": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "posting",
+            "vat"
+          ],
+          "properties": {
+            "narratives": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "charge",
+                "vat"
+              ],
+              "properties": {
+                "charge": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  }
+                },
+                "vat": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  }
+                }
+              }
+            },
+            "posting": {
+              "type": "string",
+              "enum": [
+                "post_hoc",
+                "at_instruction"
+              ]
+            },
+            "vat": {
+              "type": "string",
+              "enum": [
+                "separate_line",
+                "included_in_charge"
+              ]
+            }
+          }
+        },
+        "executedReadBack": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fxRate",
+            "railSubstitution"
+          ],
+          "properties": {
+            "fxRate": {
+              "type": "string",
+              "enum": [
+                "final_status_only"
+              ]
+            },
+            "railSubstitution": {
+              "type": "string",
+              "enum": [
+                "ips_to_sarie",
+                "none"
+              ]
+            }
+          }
+        },
+        "idempotencySpine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dedupeKeys",
+            "endToEndId",
+            "instructionId",
+            "paymentReference"
+          ],
+          "properties": {
+            "dedupeKeys": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "client",
+                  "instructionId",
+                  "endToEndId",
+                  "paymentReference"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "endToEndId": {
+              "$ref": "#/$defs/referenceLimit"
+            },
+            "instructionId": {
+              "$ref": "#/$defs/referenceLimit"
+            },
+            "paymentReference": {
+              "$ref": "#/$defs/referenceLimit"
+            }
+          }
+        },
+        "lifecycleVocabulary": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "received",
+              "accepted",
+              "processed",
+              "failed",
+              "returned",
+              "duplicate_original_succeeded",
+              "duplicate_original_rejected",
+              "duplicate_suspected_rejected"
+            ]
+          }
+        },
+        "limitFacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "access",
+            "dimensions"
+          ],
+          "properties": {
+            "access": {
+              "type": "string",
+              "enum": [
+                "read_only"
+              ]
+            },
+            "dimensions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "per_transaction",
+                  "foreign_exchange"
+                ]
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "notificationMechanisms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "poll",
+              "webhook"
+            ]
+          },
+          "uniqueItems": true,
+          "contains": {
+            "const": "poll"
+          }
+        },
+        "statementDebitReference": {
+          "type": "string",
+          "enum": [
+            "bank_reference",
+            "customer_reference"
+          ]
+        },
+        "statementFormats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "mt940",
+              "mt942",
+              "camt_052",
+              "camt_053",
+              "obie_json"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "financialAddressProvisioning": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mechanism",
+            "pricing",
+            "quota"
+          ],
+          "properties": {
+            "mechanism": {
+              "type": "string",
+              "enum": [
+                "api",
+                "scheme_file"
+              ]
+            },
+            "pricing": {
+              "type": "string",
+              "enum": [
+                "none",
+                "per_address"
+              ]
+            },
+            "quota": {
+              "type": "string",
+              "enum": [
+                "none",
+                "provider_enforced"
+              ]
+            }
+          }
+        },
+        "windows": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "paymentCutoff",
+            "statements",
+            "valueDateMaxDaysAhead"
+          ],
+          "properties": {
+            "paymentCutoff": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "afterCutoffValueDate",
+                "beforeCutoffValueDate",
+                "time",
+                "timeZone"
+              ],
+              "properties": {
+                "afterCutoffValueDate": {
+                  "$ref": "#/$defs/valueDateOffset"
+                },
+                "beforeCutoffValueDate": {
+                  "$ref": "#/$defs/valueDateOffset"
+                },
+                "time": {
+                  "type": "string",
+                  "pattern": "^\\d{2}:\\d{2}$"
+                },
+                "timeZone": {
+                  "type": "string",
+                  "pattern": "\\S"
+                }
+              }
+            },
+            "statements": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "mt940": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "availability"
+                  ],
+                  "properties": {
+                    "availability": {
+                      "type": "string",
+                      "enum": [
+                        "T-1",
+                        "today_only"
+                      ]
+                    },
+                    "lookbackDays": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "statementDaysPerRequest": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "mt942": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "availability"
+                  ],
+                  "properties": {
+                    "availability": {
+                      "type": "string",
+                      "enum": [
+                        "T-1",
+                        "today_only"
+                      ]
+                    },
+                    "lookbackDays": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "statementDaysPerRequest": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "camt_052": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "availability"
+                  ],
+                  "properties": {
+                    "availability": {
+                      "type": "string",
+                      "enum": [
+                        "T-1",
+                        "today_only"
+                      ]
+                    },
+                    "lookbackDays": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "statementDaysPerRequest": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "camt_053": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "availability"
+                  ],
+                  "properties": {
+                    "availability": {
+                      "type": "string",
+                      "enum": [
+                        "T-1",
+                        "today_only"
+                      ]
+                    },
+                    "lookbackDays": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "statementDaysPerRequest": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "obie_json": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "availability"
+                  ],
+                  "properties": {
+                    "availability": {
+                      "type": "string",
+                      "enum": [
+                        "T-1",
+                        "today_only"
+                      ]
+                    },
+                    "lookbackDays": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "statementDaysPerRequest": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                }
+              }
+            },
+            "valueDateMaxDaysAhead": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "referenceLimit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxLength"
+      ],
+      "properties": {
+        "maxLength": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "valueDateOffset": {
+      "type": "string",
+      "description": "Banking days after the instruction date.",
+      "pattern": "^D\\+(0|[1-9]\\d*)$"
+    },
+    "operationBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "direction",
+        "obligationKind",
+        "operation",
+        "resourceIdPath",
+        "resourceKind"
+      ],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "tenant_initiated",
+            "system_settlement"
+          ]
+        },
+        "envelope": {
+          "type": "string",
+          "enum": [
+            "http_200_body_status",
+            "http_status_error_body",
+            "unconfirmed_until_live"
+          ]
+        },
+        "meter": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "obligationKind": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "resourceIdPath": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "resourceKind": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "statusEnquiry": {
+          "$ref": "#/$defs/statusEnquiry"
+        }
+      }
+    },
+    "statusEnquiry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keys",
+        "pathTemplate"
+      ],
+      "properties": {
+        "keys": {
+          "type": "string",
+          "enum": [
+            "instruction_id",
+            "provider_reference"
+          ]
+        },
+        "pathTemplate": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "keys": {
+                "const": "instruction_id"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "pathTemplate": {
+                "pattern": "\\{instructionId\\}"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "keys": {
+                "const": "provider_reference"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "pathTemplate": {
+                "pattern": "\\{providerReference\\}"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "webhookTransitionPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventKind",
+        "operationName",
+        "optionalPayloadFields",
+        "requiredFieldGroups",
+        "requiredPayloadFields",
+        "resourceIdField",
+        "resourceKind",
+        "timestampField"
+      ],
+      "properties": {
+        "eventKind": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "operationName": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "optionalPayloadFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        },
+        "requiredFieldGroups": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "\\S"
+            }
+          }
+        },
+        "requiredPayloadFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        },
+        "resourceIdField": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "resourceKind": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "timestampField": {
+          "type": "string",
+          "enum": [
+            "activeAt",
+            "completedAt",
+            "failedAt",
+            "returnedAt",
+            "receivedAt",
+            "clearedAt",
+            "expiredAt",
+            "voidedAt",
+            "postedAt",
+            "refundedAt"
+          ]
+        }
+      }
+    }
+  }
+}

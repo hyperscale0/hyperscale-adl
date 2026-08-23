@@ -1,0 +1,49 @@
+name: Bug report
+description: ADL accepted a declaration it should have rejected, rejected one it should have accepted, or crashed.
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report a security vulnerability here. Use the Security tab,
+        "Report a vulnerability", which opens a private advisory.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The `@hyperscale0/adl` version, and your Bun or Node version.
+      placeholder: 1.0.0-alpha.1, bun 1.4.0
+    validations:
+      required: true
+  - type: dropdown
+    id: gate
+    attributes:
+      label: Which gate
+      description: Where the wrong answer came from.
+      options:
+        - Registry load (createProviderAdapterRegistry / defineProviderAdapters)
+        - Conformance (certifyPartnerBankAdapter / partnerBankConformanceFindings)
+        - Manifest schema (spec/manifest.schema.json)
+        - Types (tsc)
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened
+      description: Include the finding code or the error message verbatim.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: The declaration that triggers it
+      description: >
+        The smallest adapter declaration that reproduces the behavior. Remove
+        every credential locator, hostname, and provider identifier you do not
+        want public. Rename the bank if you need to; the gates do not read the
+        name.
+      render: typescript
+    validations:
+      required: true

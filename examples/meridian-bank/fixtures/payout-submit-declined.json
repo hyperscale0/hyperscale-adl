@@ -1,0 +1,25 @@
+{
+  "kind": "command",
+  "operation": "payout.submit",
+  "request": {
+    "method": "POST",
+    "path": "/v2/payments",
+    "body": {
+      "instructionId": "HS-INS-0008",
+      "endToEndId": "HS-E2E-0008",
+      "paymentReference": "HS-PAY-0008",
+      "amount": "40.00",
+      "currency": "EUR",
+      "creditorName": "Closed Account Ltd",
+      "creditorAccount": "IE29MERI93115299999999",
+      "requestedValueDate": "2026-03-03"
+    }
+  },
+  "response": {
+    "httpStatus": 422,
+    "body": {
+      "status": "DECLINED",
+      "message": "creditor account is closed"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+
+      - run: bun install --frozen-lockfile
+
+      # The published schema still matches src/vocabulary.ts.
+      - run: bun run spec:check
+
+      - run: bun test
+
+      - run: bun run typecheck
+
+      - run: bun run build
+
+      # The shipped example certifies with nothing but this package.
+      - run: bun run conformance -- ./examples/meridian-bank
+
+      - run: bun pm pack --dry-run

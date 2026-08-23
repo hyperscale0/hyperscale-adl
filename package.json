@@ -1,0 +1,76 @@
+{
+  "name": "@hyperscale0/adl",
+  "version": "1.0.0-alpha.1",
+  "description": "The Adapter Declaration Language: provider adapter interfaces, registry validation, and the partner-bank conformance suite.",
+  "keywords": [
+    "adl",
+    "adapter",
+    "banking",
+    "conformance",
+    "fintech",
+    "iso20022",
+    "json-schema",
+    "payments",
+    "provider"
+  ],
+  "homepage": "https://github.com/hyperscale0/hyperscale-adl#readme",
+  "bugs": {
+    "url": "https://github.com/hyperscale0/hyperscale-adl/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyperscale0/hyperscale-adl.git"
+  },
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./spec/manifest.schema.json": "./spec/manifest.schema.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "AUTHORS",
+    "CHANGELOG.md",
+    "LICENSE",
+    "LICENSING.md",
+    "README.md",
+    "SECURITY.md",
+    "TRADEMARKS.md",
+    "conformance",
+    "dist",
+    "docs",
+    "examples",
+    "spec"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "bun run spec:check && bun test && tsc -p tsconfig.json",
+    "conformance": "bun scripts/conformance.ts",
+    "postpack": "bun scripts/pack-exports.ts restore",
+    "prepack": "bun run build && bun scripts/pack-exports.ts apply",
+    "spec:check": "bun scripts/emit-spec.ts --check",
+    "spec:emit": "bun scripts/emit-spec.ts",
+    "test": "bun test",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.0",
+    "typescript": "6.0.3"
+  },
+  "author": "Hyperscale LLC",
+  "contributors": [
+    "Meshael AlBakaawi",
+    "Amir Ayub",
+    "Sara AlBakaawi"
+  ]
+}

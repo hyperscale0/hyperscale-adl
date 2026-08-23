@@ -1,0 +1,60 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  id-token: write # mints the OIDC token npm trades for a publish grant
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # prepack builds the package with bun; npm does the publishing.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false # never cache a release build
+
+      # Trusted publishing needs npm 11.5.1 or later; the bundled npm may be older.
+      - run: npm install -g npm@latest
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run spec:check
+      - run: bun test
+      - run: bun run typecheck
+
+      # OIDC only. No NODE_AUTH_TOKEN, no npm token secret in this repository.
+      #
+      # `latest` is passed explicitly rather than left to npm's default. npm
+      # refuses to publish a prerelease under the default tag (publish.js
+      # checks `isDefaultTag`), and moving a dist-tag after the fact needs an
+      # interactive 2FA code. Publishing straight to `latest` keeps a bare
+      # `npm install` on the newest release with no manual step.
+      #
+      # No `--provenance`. npm answers E422 "Only public source repositories
+      # are supported when publishing with provenance" while the source repo
+      # is private, and once it is public npm attaches provenance on its own
+      # for a trusted-publisher run. The flag can only turn a working publish
+      # into a failed one, so it stays off.
+      - run: npm publish --tag latest --access public
+
+      # Best effort: the OIDC token authenticates `npm publish`, not dist-tag
+      # writes. When the registry refuses it, `latest` is already correct and
+      # only the `@alpha` alias lags.
+      - name: Point the alpha tag at this release
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          npm dist-tag add "$PKG@$VERSION" alpha \
+            || echo "alpha tag not set (needs account auth); latest is correct"

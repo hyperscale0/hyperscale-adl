@@ -1,0 +1,45 @@
+{
+  "kind": "statement",
+  "format": "camt_053",
+  "account": "IE29MERI93115200000001",
+  "statementDate": "2026-03-03",
+  "entries": [
+    {
+      "entryReference": "MER-ENT-88213",
+      "customerReference": "HS-PAY-0007",
+      "amount": "-2500.00",
+      "currency": "EUR",
+      "narrative": "PAYMENT TO ACME LTD",
+      "bookingDate": "2026-03-03",
+      "valueDate": "2026-03-03"
+    },
+    {
+      "entryReference": "MER-ENT-88214",
+      "customerReference": null,
+      "amount": "-1.50",
+      "currency": "EUR",
+      "narrative": "MERIDIAN FEE HS-PAY-0007",
+      "bookingDate": "2026-03-03",
+      "valueDate": "2026-03-03"
+    },
+    {
+      "entryReference": "MER-ENT-88215",
+      "customerReference": null,
+      "amount": "-0.35",
+      "currency": "EUR",
+      "narrative": "MERIDIAN TAX HS-PAY-0007",
+      "bookingDate": "2026-03-03",
+      "valueDate": "2026-03-03"
+    },
+    {
+      "entryReference": "MER-ENT-88301",
+      "customerReference": null,
+      "amount": "1200.00",
+      "currency": "EUR",
+      "narrative": "INBOUND TRANSFER FROM BUYER 4471",
+      "financialAddressId": "fa_2299",
+      "bookingDate": "2026-03-03",
+      "valueDate": "2026-03-03"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "kind": "enquiry",
+  "operation": "payout.submit",
+  "request": {
+    "method": "GET",
+    "path": "/v2/payments/MER-9F3K2"
+  },
+  "response": {
+    "httpStatus": 200,
+    "body": {
+      "providerReference": "MER-9F3K2",
+      "paymentReference": "HS-PAY-0007",
+      "status": "REPLAY_SETTLED",
+      "originalProviderReference": "MER-9F3K2",
+      "valueDate": "2026-03-03",
+      "settledAt": "2026-03-03T09:04:41Z"
+    }
+  }
+}
