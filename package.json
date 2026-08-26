@@ -1,6 +1,6 @@
 {
   "name": "@hyperscale0/adl",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "The Adapter Declaration Language: provider adapter interfaces, registry validation, and the partner-bank conformance suite.",
   "keywords": [
     "adl",
