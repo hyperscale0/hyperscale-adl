@@ -6,6 +6,15 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0.
 
 ## [Unreleased]
 
+### Removed
+
+- `providerCredentialSources` and `ProviderCredentialSource` from
+  `src/vocabulary.ts`. Nothing read either one. A credential source is spelled
+  as a literal union on `ProviderCredentialReference` and as a `const` in
+  `spec/manifest.schema.json`, so the vocabulary entry was a third copy that no
+  type checker and no schema consulted. Neither name was reachable through the
+  package entry point, so no installed consumer can be affected.
+
 ## [1.0.0-alpha.1] - 2026-08-23
 
 First retained release, as `@hyperscale0/adl`, from the repository

@@ -32,8 +32,6 @@ export const providerEgressModes = [
   "sync_clearance",
 ] as const;
 
-export const providerCredentialSources = ["environment", "keychain"] as const;
-
 /** Which reference a read-after-write status enquiry is keyed by. */
 export const statusEnquiryKeys = [
   "instruction_id",
@@ -167,8 +165,6 @@ export type ProviderOperationDirection =
   (typeof providerOperationDirections)[number];
 export type ProviderResourceBinding = (typeof providerResourceBindings)[number];
 export type ProviderEgressMode = (typeof providerEgressModes)[number];
-export type ProviderCredentialSource =
-  (typeof providerCredentialSources)[number];
 export type StatusEnquiryKey = (typeof statusEnquiryKeys)[number];
 export type ProviderResponseEnvelope =
   (typeof providerResponseEnvelopes)[number];
