@@ -12,7 +12,7 @@ body:
     attributes:
       label: Version
       description: The `@hyperscale0/adl` version, and your Bun or Node version.
-      placeholder: 1.0.0-alpha.1, bun 1.4.0
+      placeholder: 1.0.0-beta.1, bun 1.4.0
     validations:
       required: true
   - type: dropdown

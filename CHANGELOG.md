@@ -6,6 +6,11 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0.
 
 ## [Unreleased]
 
+## [1.0.0-beta.1] - 2026-08-29
+
+- This is the first beta and has no package behavior changes from
+  1.0.0-alpha.2.
+
 ## [1.0.0-alpha.2] - 2026-08-26
 
 ### Removed
@@ -54,6 +59,7 @@ write an adapter in; an adapter is still what you write.
   the exported types derived from them, so the published schema cannot drift
   from the type checker. No exported type changed shape.
 
-[Unreleased]: https://github.com/hyperscale0/hyperscale-adl/compare/v1.0.0-alpha.2...HEAD
+[Unreleased]: https://github.com/hyperscale0/hyperscale-adl/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/hyperscale0/hyperscale-adl/compare/v1.0.0-alpha.2...v1.0.0-beta.1
 [1.0.0-alpha.2]: https://github.com/hyperscale0/hyperscale-adl/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
 [1.0.0-alpha.1]: https://github.com/hyperscale0/hyperscale-adl/releases/tag/v1.0.0-alpha.1

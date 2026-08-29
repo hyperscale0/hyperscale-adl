@@ -15,9 +15,9 @@ credential, and never decides what a payment means.
 
 That split is why the checks in ADL are declaration-level. Conformance
 does not call your bank. It proves the facts you declared are complete enough
-for a generic runtime to poll, classify, reconcile, and dedupe **without
-guessing**, because every guess a runtime makes about money is a bug you find
-in production.
+for a generic runtime to poll, classify, reconcile, and dedupe without
+guessing. Every guess a runtime makes about money is a provider-boundary
+defect.
 
 Two consequences worth internalizing before you write a line:
 
@@ -30,7 +30,7 @@ Two consequences worth internalizing before you write a line:
   fact to post from. `validatePartnerBankProfile` refuses a profile whose
   `notificationMechanisms` omits `poll`, whatever else it lists.
 
-### Adapter Symmetry
+### Adapter symmetry
 
 Hyperscale's own bank adapters are written against this package and nothing
 more. There is no private adapter API, no internal hook, no second interface
@@ -108,18 +108,18 @@ Each `ProviderOperationBinding` carries:
 | `resourceKind`   | The platform resource the provider's answer commits onto. Must appear in `bindings`.                                                                                                                                       |
 | `resourceIdPath` | Where the resource id is read from. Non-blank, checked at load.                                                                                                                                                            |
 | `meter`          | Optional. The usage meter this operation feeds.                                                                                                                                                                            |
-| `envelope`       | How **this** operation's response carries its outcome. Required on a live command, see below.                                                                                                                              |
+| `envelope`       | How this operation's response carries its outcome. Required when the runtime sends a provider command, see below.                                                                                                          |
 | `statusEnquiry`  | The authoritative read-after-write. Required on a REST command, see below.                                                                                                                                                 |
 
 ### The envelope class, per operation
 
 `ProviderResponseEnvelope` has three inhabitants:
 
-- `http_200_body_status` -- every response is HTTP 200 and the outcome is a
+- `http_200_body_status`: every response is HTTP 200 and the outcome is a
   status token in the body. A rejection arrives inside a success.
-- `http_status_error_body` -- the HTTP status carries the outcome and a failure
+- `http_status_error_body`: the HTTP status carries the outcome and a failure
   body is prose.
-- `unconfirmed_until_live` -- the provider publishes no error sample, so the
+- `unconfirmed_until_live`: the provider publishes no error sample, so the
   class is honestly unknown.
 
 Declare it **per operation**, never per provider. Real providers answer in more
@@ -130,9 +130,10 @@ Conformance requires the class on any binding where the runtime sends a command
 and reads an answer, meaning `direction: "tenant_initiated"` on an `egress` of
 `rest` or `sync_clearance`. Missing it is `response_envelope_unclassified`; a
 declared `unconfirmed_until_live` is `response_envelope_unconfirmed`, because
-certification is the licence to serve live and the class must be established
-first. A `system_settlement` binding carries no response of its own, so it owes
-no envelope, and declaring one there would be a borrowed fact.
+conformance requires the response class to be established first. Passing that
+check does not grant live readiness. A `system_settlement` binding carries no
+response of its own, so it owes no envelope, and declaring one there would be a
+borrowed fact.
 
 ### Status enquiry, the read-after-write
 
@@ -165,10 +166,10 @@ enquiry support from a command URL, so:
 
 `ProviderEgressMode` is how this adapter reaches the provider at all:
 
-- `none` -- the capability is learned entirely by observation;
-- `rest` -- per-command HTTP;
-- `batch_reconcile` -- files, reconciled after the fact;
-- `sync_clearance` -- one synchronous exchange that carries its own truth.
+- `none`: the capability is learned entirely by observation;
+- `rest`: per-command HTTP;
+- `batch_reconcile`: files, reconciled after the fact;
+- `sync_clearance`: one synchronous exchange that carries its own truth.
 
 A `tenant_initiated` binding on `none` or `batch_reconcile` promises an
 outbound call the egress mode cannot make: `egress_direction_incoherent`.
@@ -191,11 +192,11 @@ missing: polling is the fact.
 `bindings` maps each resource kind this adapter settles to a
 `ProviderResourceBinding`:
 
-- `strict` -- the provider's fact must match the platform's row exactly;
-- `claim` -- the provider's fact claims an existing row;
-- `confirmation_only` -- the provider only confirms what the platform already
+- `strict`: the provider's fact must match the platform's row exactly;
+- `claim`: the provider's fact claims an existing row;
+- `confirmation_only`: the provider only confirms what the platform already
   decided;
-- `evidence_only` -- the fact is recorded as evidence, and settles nothing.
+- `evidence_only`: the fact is recorded as evidence, and settles nothing.
 
 Every `resourceKind` named by an operation binding or a webhook plan needs an
 entry, or conformance reports `resource_binding_missing`: a provider fact with
@@ -226,8 +227,8 @@ would otherwise guess.
 
 `wireCodec` (`rest_json`, `iso20022_xml`, `swift_mt`) and `auth`
 (`ProviderAuthEnvelope` plus a signing scheme). Declaring a grant the bank will
-not accept fails on the first live call, so read the bank's token service, do
-not assume client credentials.
+not accept fails on the first provider call. Read the bank's token service and
+do not assume client credentials.
 
 ### The idempotency spine
 
@@ -415,8 +416,8 @@ An adapter is handed over as source, never as a running service:
 
 ## Stability
 
-The package is `1.0.0-alpha.1` and the surface can still change on a minor
-version until it is `1.0.0`. Two promises hold from now:
+The package is pre-1.0 and the surface can still change on a minor version
+until it is `1.0.0`. Two promises hold now:
 
 - conformance codes are append-only;
 - a value removed from a vocabulary in `src/vocabulary.ts` is a breaking change

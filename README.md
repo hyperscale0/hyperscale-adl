@@ -1,15 +1,16 @@
 # ADL
 
-ADL, the Adapter Declaration Language: the format for describing a bank or
-provider to Hyperscale, the validator that refuses a declaration the runtime
-could not operate, and the conformance suite that says when one is ready to
-serve live money.
+ADL is the Adapter Declaration Language: the public format for declaring how a
+bank or provider behaves at the control-plane boundary. Its validator and
+conformance suite refuse incomplete interface facts before a generic runtime
+can poll, classify, reconcile, or deduplicate provider results.
 
-It is the third of three. UDL describes the product, HSX scripts the money
-movement, ADL declares the provider the money moves through.
+The three language boundaries stay separate. HSX authors settlement behavior.
+UDL defines the canonical product contract. ADL declares how an external
+provider performs or confirms work behind that contract.
 
-**Status: alpha.** `1.0.0-alpha.1`. The surface can still change on a minor
-version until 1.0.0.
+**Status: alpha.** The surface can still change on a minor version until
+1.0.0.
 
 ## Adapter symmetry
 
@@ -32,6 +33,9 @@ Your adapter opens no sockets, holds no credentials, and decides nothing about
 what a payment means. It states facts, and the checks in this package prove
 those facts are complete enough for a generic runtime to poll, classify,
 reconcile, and dedupe without guessing.
+
+Conformance checks a declaration. It does not contact a provider, verify a
+credential, certify regulatory readiness, or make a Product live.
 
 ## Install
 
@@ -100,14 +104,14 @@ empty finding list is the certification.
 
 ## Where to go next
 
-- **[docs/authoring-guide.md](docs/authoring-guide.md)** -- the whole job, field
+- **[docs/authoring-guide.md](docs/authoring-guide.md)**: the whole job, field
   by field, with the rule that enforces each one.
-- **[examples/meridian-bank](examples/meridian-bank)** -- a complete certified
+- **[examples/meridian-bank](examples/meridian-bank)**: a complete certified
   adapter for a bank that does not exist, with fixtures and its own tests.
   Copy it.
-- **[conformance/cases.json](conformance/cases.json)** -- every rule as data:
+- **[conformance/cases.json](conformance/cases.json)**: every rule as data:
   one broken fact per case, and what each gate says about it.
-- **[spec/manifest.schema.json](spec/manifest.schema.json)** -- JSON Schema
+- **[spec/manifest.schema.json](spec/manifest.schema.json)**: JSON Schema
   2020-12 for one declaration, for authors who are not writing TypeScript.
 
 ## Running conformance
