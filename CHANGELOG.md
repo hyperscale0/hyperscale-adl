@@ -6,6 +6,11 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0.
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-09-10
+
+- Republished against UDL 2.0.0. No package behavior changes from
+  1.0.0-beta.1.
+
 ## [1.0.0-beta.1] - 2026-08-29
 
 - This is the first beta and has no package behavior changes from

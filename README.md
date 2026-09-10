@@ -1,41 +1,18 @@
+![ADL: Declare how a bank or provider behaves.](docs/assets/adl.svg)
+
 # ADL
 
-ADL is the Adapter Declaration Language: the public format for declaring how a
-bank or provider behaves at the control-plane boundary. Its validator and
-conformance suite refuse incomplete interface facts before a generic runtime
-can poll, classify, reconcile, or deduplicate provider results.
+ADL is the Adapter Declaration Language: the public format for declaring how a bank or provider behaves at the control-plane boundary. Its validator and conformance suite refuse incomplete interface facts before a generic runtime can poll, classify, reconcile, or deduplicate provider results. The three language boundaries stay separate: HSX authors settlement behavior, UDL defines the canonical product contract, and ADL declares how an external provider performs or confirms work behind that contract.
 
-The three language boundaries stay separate. HSX authors settlement behavior.
-UDL defines the canonical product contract. ADL declares how an external
-provider performs or confirms work behind that contract.
-
-**Status: alpha.** The surface can still change on a minor version until
-1.0.0.
+**Status: beta.** Current release is 1.0.0-beta.1. Pre-1.0 releases can change on minor versions until 1.0.0.
 
 ## Adapter symmetry
 
-Hyperscale's own bank adapters are written against this package and nothing
-more. There is no private adapter API and no second interface for first-party
-code. When one of our adapters needs a seam ADL lacks, the seam is added here,
-in public, or it is not added.
+Hyperscale first-party bank adapters are written against this package and nothing more. There is no private adapter API and no second interface for first-party code. When an adapter needs a seam ADL lacks, the seam is added here, in public, or not at all.
 
-So the guide below is not a simplified account of how we do it. It is how we
-do it.
+An adapter is a declaration, not a client. It is a plain object stating what the provider does: which commands exist, how responses classify, what bank status tokens mean, when statements can be fetched, and which reference returns on a debit. The generic execution runtime ships with the platform. An adapter opens no sockets, holds no credentials, and decides nothing about what a payment means.
 
-## What an adapter is
-
-A declaration, not a client. A plain object saying what the provider does:
-which commands exist, how each response classifies, what the bank's status
-tokens mean, when statements can be fetched, which reference comes back on a
-debit. The runtime that executes it is generic and ships with the platform.
-
-Your adapter opens no sockets, holds no credentials, and decides nothing about
-what a payment means. It states facts, and the checks in this package prove
-those facts are complete enough for a generic runtime to poll, classify,
-reconcile, and dedupe without guessing.
-
-Conformance checks a declaration. It does not contact a provider, verify a
-credential, certify regulatory readiness, or make a Product live.
+Conformance checks a declaration. It does not contact a bank, verify a credential, certify regulatory readiness, or make a Product live.
 
 ## Install
 
@@ -43,13 +20,11 @@ credential, certify regulatory readiness, or make a Product live.
 npm install @hyperscale0/adl
 ```
 
-Every release before 1.0.0 is an alpha, and `latest` follows the newest one, so
-a bare install gets it. Pin an exact version if you need one: until 1.0.0 a
-change to the surface ships as a minor bump, not a major.
+Pre-1.0 releases are prerelease versions (alpha and beta). Pin an exact version if needed: until 1.0.0, a change to the surface ships as a minor bump, not a major. The package has no runtime dependencies.
 
-No runtime dependencies, and no proprietary code imported.
+## Adapter declaration
 
-## The thirty-second shape
+A provider adapter declaration using verified package exports and the repository example profile:
 
 ```ts
 import {
@@ -57,12 +32,12 @@ import {
   createProviderAdapterRegistry,
   type ProviderAdapterVocabulary,
 } from "@hyperscale0/adl";
+import { meridianProfile } from "./examples/meridian-bank/index.js";
 
 interface MyVocabulary extends ProviderAdapterVocabulary {
   capability: "payout_execution";
   operation: "payout.submit";
   resource: "payout";
-  // ...the rest of your closed unions
 }
 
 const defineAdapters = createProviderAdapterRegistry<MyVocabulary>();
@@ -91,30 +66,18 @@ export const adapters = defineAdapters([
     config: {
       credentialRef: { source: "environment", name: "MERIDIAN_CREDENTIALS" },
     },
-    profile: myBankProfile,
+    profile: meridianProfile,
   },
 ]);
 
-for (const adapter of adapters) certifyPartnerBankAdapter(adapter);
+for (const adapter of adapters) {
+  certifyPartnerBankAdapter(adapter);
+}
 ```
 
-`createProviderAdapterRegistry` validates at import and preserves your literal
-types. `certifyPartnerBankAdapter` throws with every gap listed at once; an
-empty finding list is the certification.
+`createProviderAdapterRegistry` validates at import and preserves literal types. `certifyPartnerBankAdapter` throws with every gap listed at once; an empty finding list is the certification.
 
-## Where to go next
-
-- **[docs/authoring-guide.md](docs/authoring-guide.md)**: the whole job, field
-  by field, with the rule that enforces each one.
-- **[examples/meridian-bank](examples/meridian-bank)**: a complete certified
-  adapter for a bank that does not exist, with fixtures and its own tests.
-  Copy it.
-- **[conformance/cases.json](conformance/cases.json)**: every rule as data:
-  one broken fact per case, and what each gate says about it.
-- **[spec/manifest.schema.json](spec/manifest.schema.json)**: JSON Schema
-  2020-12 for one declaration, for authors who are not writing TypeScript.
-
-## Running conformance
+Check an adapter declaration with conformance:
 
 ```bash
 bun run conformance -- ./examples/meridian-bank
@@ -126,43 +89,22 @@ ok    meridian_bank:bank_credit
 2 adapter(s) checked, 0 finding(s) reported
 ```
 
-Exit 1 when anything reports, so it drops straight into CI.
+The command exits 0 on success and 1 when findings are reported.
 
-## Development
+## Documentation
 
-```bash
-bun install
-bun run check     # spec drift, tests, types
-bun run build
-```
+- [Authoring guide](docs/authoring-guide.md)
+- [Meridian Bank example](examples/meridian-bank)
+- [Conformance test cases](conformance/cases.json)
+- [Manifest JSON schema](spec/manifest.schema.json)
+- [Contributing](CONTRIBUTING.md)
 
 ## Versioning
 
-Semantic versioning from 1.0.0. Until then, alpha releases may change the
-surface on a minor version. Two promises hold now:
+Semantic versioning from 1.0.0. Until then, prereleases may change the surface on a minor version. Conformance codes are append-only: a released code is never renamed or removed. Removing a value from a vocabulary in `src/vocabulary.ts` is a breaking change documented in [CHANGELOG.md](CHANGELOG.md).
 
-- conformance codes are append-only: a released code is never renamed or
-  removed, so `switch` statements stay exhaustive;
-- removing a value from a vocabulary in `src/vocabulary.ts` is a breaking
-  change and appears in [CHANGELOG.md](CHANGELOG.md).
+## License and security
 
-## Contributing
+ADL is licensed under AGPL-3.0-only, with a commercial license available from Hyperscale LLC. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md), and [TRADEMARKS.md](TRADEMARKS.md).
 
-Issues only. Hyperscale makes the changes to the format and the package; you
-propose them in an issue carrying the provider that needs the seam and the
-conformance case it would add. [CONTRIBUTING.md](CONTRIBUTING.md) has that
-model in full, plus the loop: what earns a new field, how to regenerate the
-schema, and the CLA behind a rare accepted pull request. Participation is under
-the [Code of Conduct](CODE_OF_CONDUCT.md).
-
-Vulnerabilities go through GitHub private reporting, never a public issue. See
-[SECURITY.md](SECURITY.md).
-
-## License
-
-AGPL-3.0-only, with a commercial license available from Hyperscale LLC for
-organisations that cannot accept the AGPL. See [LICENSE](LICENSE) for the text
-and [LICENSING.md](LICENSING.md) for which one you want and how to ask for the
-commercial one. Neither covers the Hyperscale marks;
-[TRADEMARKS.md](TRADEMARKS.md) says what that means and carries the rule for
-claiming conformance.
+Vulnerability reports go through private disclosure as described in [SECURITY.md](SECURITY.md).

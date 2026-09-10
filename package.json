@@ -1,6 +1,6 @@
 {
   "name": "@hyperscale0/adl",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "The Adapter Declaration Language: provider adapter interfaces, registry validation, and the partner-bank conformance suite.",
   "keywords": [
     "adl",
@@ -64,8 +64,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "@types/bun": "1.4.0",
-    "typescript": "6.0.3"
+    "bun-types": "1.4.2",
+    "typescript": "7.0.2"
   },
   "author": "Hyperscale LLC",
   "contributors": [
