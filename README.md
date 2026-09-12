@@ -1,6 +1,14 @@
-![ADL: Declare how a bank or provider behaves.](docs/assets/adl.svg)
+<p align="left">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/adl-horizontal-white.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/brand/adl-horizontal.svg">
+  <img src="docs/assets/brand/adl-horizontal.svg" alt="Hyperscale™ ADL" width="335">
+</picture>
+</p>
 
 # ADL
+
+Hyperscale™ ADL. Declare how a bank or provider behaves behind a contract.
 
 ADL is the Adapter Declaration Language: the public format for declaring how a bank or provider behaves at the control-plane boundary. Its validator and conformance suite refuse incomplete interface facts before a generic runtime can poll, classify, reconcile, or deduplicate provider results. The three language boundaries stay separate: HSX authors settlement behavior, UDL defines the canonical product contract, and ADL declares how an external provider performs or confirms work behind that contract.
 
@@ -108,3 +116,7 @@ Semantic versioning from 1.0.0. Until then, prereleases may change the surface o
 ADL is licensed under AGPL-3.0-only, with a commercial license available from Hyperscale LLC. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md), and [TRADEMARKS.md](TRADEMARKS.md).
 
 Vulnerability reports go through private disclosure as described in [SECURITY.md](SECURITY.md).
+
+---
+
+Hyperscale™ is a trademark of Hyperscale LLC. Code licenses do not grant rights to the name or marks.
