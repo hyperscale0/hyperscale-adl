@@ -1,0 +1,30 @@
+{
+  "releaseRevision": "7c80d03cced6a85395be53cdcf30bd3269dbd5b6",
+  "tag": "v0.2.0",
+  "assets": [
+    {
+      "source": "assets/exports/adl-horizontal.svg",
+      "destination": "adl-horizontal.svg",
+      "sourceSha256": "9bc4bd714cdcbfb3ffcd416bced0a6e4fbc6891158f73fd06292b599146327ea",
+      "destinationSha256": "9bc4bd714cdcbfb3ffcd416bced0a6e4fbc6891158f73fd06292b599146327ea"
+    },
+    {
+      "source": "assets/exports/adl-horizontal-white.svg",
+      "destination": "adl-horizontal-white.svg",
+      "sourceSha256": "8804c3122372de96fbc70f54736e13624bcbf5f227e4bf2aea33288903883612",
+      "destinationSha256": "8804c3122372de96fbc70f54736e13624bcbf5f227e4bf2aea33288903883612"
+    },
+    {
+      "source": "assets/exports/adl-stacked.svg",
+      "destination": "adl-stacked.svg",
+      "sourceSha256": "48159b64287f56e07667b026f63d2b66f8ede35426b9eba99749a9000277cedc",
+      "destinationSha256": "48159b64287f56e07667b026f63d2b66f8ede35426b9eba99749a9000277cedc"
+    },
+    {
+      "source": "assets/exports/adl-stacked-white.svg",
+      "destination": "adl-stacked-white.svg",
+      "sourceSha256": "49ee01f0ce1e66dab36f5a151dc62c898364ec93505bd8a4f4e7f5d5d646be60",
+      "destinationSha256": "49ee01f0ce1e66dab36f5a151dc62c898364ec93505bd8a4f4e7f5d5d646be60"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 <p align="left">
 <picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="docs/assets/brand/adl-stacked-white.svg">
+  <source media="(max-width: 600px)" srcset="docs/assets/brand/adl-stacked.svg">
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/adl-horizontal-white.svg">
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/brand/adl-horizontal.svg">
   <img src="docs/assets/brand/adl-horizontal.svg" alt="Hyperscale™ ADL" width="335">
