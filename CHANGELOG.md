@@ -6,6 +6,10 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0.
 
 ## [Unreleased]
 
+## [1.0.0-beta.5] - 2026-09-18
+
+- Licensed under the Hyperscale Intellectual Property and Copyright License 1.0 (`LicenseRef-Hyperscale-IPCL-1.0`), Tier 2 (Source Available). The AGPL-3.0-only grant ends with this release; earlier versions keep it. `LICENSE.md` and `NOTICE.md` replace the previous license, licensing and trademark files; trademark and conformance rules now live in the license. No vocabulary or conformance change.
+
 ## [1.0.0-beta.4] - 2026-09-14
 
 - Republished with the design-language brand assets in the README. No package behavior changes from 1.0.0-beta.3.

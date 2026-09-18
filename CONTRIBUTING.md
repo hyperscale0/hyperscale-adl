@@ -18,9 +18,9 @@ with neither is a wish.
 
 Hyperscale accepts a pull request rarely, and only after asking for one. When
 that happens the maintainer who asked sends the CLA and the author signs it
-before the merge. The AGPL on its own does not let
-Hyperscale LLC offer a contribution under the commercial license it sells, so
-the CLA is what makes a merge possible at all.
+before the merge. The CLA lets Hyperscale LLC carry a contribution under the
+Hyperscale license and the commercial license it sells, so it is what makes a
+merge possible at all.
 
 The setup and the loop below are here because reading ADL, running the
 suite, and building the case for a proposal all need them.
@@ -66,10 +66,9 @@ and which provider needed it.
 ## Contributor license agreement
 
 In the rare case Hyperscale accepts a pull request, the author signs
-[the CLA](CLA.md) first, and it only has to happen once. The AGPL alone does
-not let Hyperscale LLC offer the contribution under the commercial license it
-sells alongside it, and the AGPL says nothing about patents, so the patent
-terms live in the CLA too.
+[the CLA](CLA.md) first, and it only has to happen once. It lets Hyperscale
+LLC carry the contribution under the Hyperscale license and the commercial
+license it sells alongside it, and it carries the patent terms.
 
 ## Conduct
 

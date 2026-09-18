@@ -115,7 +115,7 @@ Semantic versioning from 1.0.0. Until then, prereleases may change the surface o
 
 ## License and security
 
-ADL is licensed under AGPL-3.0-only, with a commercial license available from Hyperscale LLC. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md), and [TRADEMARKS.md](TRADEMARKS.md).
+ADL is licensed under the Hyperscale Intellectual Property and Copyright License, Tier 2 (Source Available), with a commercial license available from Hyperscale LLC. It is not open source. See [LICENSE.md](LICENSE.md) and [NOTICE.md](NOTICE.md).
 
 Vulnerability reports go through private disclosure as described in [SECURITY.md](SECURITY.md).
 
