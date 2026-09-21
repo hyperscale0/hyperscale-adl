@@ -35,6 +35,12 @@ const supportedKeywords = new Set([
   "allOf",
   "if",
   "then",
+  "maxItems",
+  "minLength",
+  "maxLength",
+  "maximum",
+  "anyOf",
+  "not",
 ]);
 
 /** Every reason `value` fails `schema`, deepest path first written out. */
@@ -89,6 +95,33 @@ export function schemaViolations(
     violations.push(...arrayViolations(schema, value, root, path, fail));
   }
 
+  const not = schema["not"];
+  if (
+    isPlainObject(not) &&
+    schemaViolations(not, value, root, path).length === 0
+  )
+    fail("matches forbidden schema");
+  const anyOf = schema["anyOf"];
+  if (
+    Array.isArray(anyOf) &&
+    !anyOf.some(
+      (branch) =>
+        schemaViolations(branch as JsonSchema, value, root, path).length === 0,
+    )
+  )
+    fail("matches no alternative");
+  if (typeof value === "string") {
+    if (typeof schema.minLength === "number" && value.length < schema.minLength)
+      fail("string too short");
+    if (typeof schema.maxLength === "number" && value.length > schema.maxLength)
+      fail("string too long");
+  }
+  if (
+    typeof value === "number" &&
+    typeof schema.maximum === "number" &&
+    value > schema.maximum
+  )
+    fail("above maximum");
   const oneOf = schema["oneOf"];
   if (Array.isArray(oneOf)) {
     const matches = oneOf.filter(
@@ -181,6 +214,8 @@ function arrayViolations(
       );
     });
   }
+  if (typeof schema.maxItems === "number" && value.length > schema.maxItems)
+    fail("too many items");
   const minItems = schema["minItems"];
   if (typeof minItems === "number" && value.length < minItems) {
     fail(`needs at least ${minItems} item(s)`);

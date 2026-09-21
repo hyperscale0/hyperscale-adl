@@ -4,7 +4,12 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0.
 
-## [Unreleased]
+## [1.0.0-beta.7] - 2026-09-21
+
+- Added optional `subjectRequirements` on operation bindings: subject fields an action collects before dispatch.
+- Added `BoundaryInstruction`, `BoundaryObservation`, `BoundaryOutcome` and `BoundaryAdapter`.
+- Replaced bank profiles and certification with generic binding conformance.
+- Removed the fictional bank example and its status, rail and calendar vocabulary.
 
 ## [1.0.0-beta.6] - 2026-09-20
 

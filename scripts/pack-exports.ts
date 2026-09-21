@@ -19,6 +19,7 @@ const sourceEntries = {
   types: "./src/index.ts",
   exports: {
     ".": "./src/index.ts",
+    "./boundary-fixture": "./src/boundary-fixture.ts",
     [schemaEntry]: schemaEntry,
     "./package.json": "./package.json",
   },
@@ -30,6 +31,10 @@ const distEntries = {
   types: "./dist/index.d.ts",
   exports: {
     ".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
+    "./boundary-fixture": {
+      types: "./dist/boundary-fixture.d.ts",
+      default: "./dist/boundary-fixture.js",
+    },
     [schemaEntry]: schemaEntry,
     "./package.json": "./package.json",
   },

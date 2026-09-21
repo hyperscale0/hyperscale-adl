@@ -37,26 +37,24 @@ matches `src/vocabulary.ts`), `bun test`, and `tsc`. Bun 1.4 or later.
 
 ## The loop
 
-- **Adding a value to a vocabulary** (a statement format, a lifecycle state, an
+- **Adding a value to a vocabulary** (an operation direction or an
   auth envelope): edit `src/vocabulary.ts`, then `bun run spec:emit` and commit
   the regenerated `spec/manifest.schema.json`. The two are checked against each
   other, so a stale schema fails CI.
-- **Adding a conformance rule**: add the code to `partnerBankConformanceCodes`,
+- **Adding a conformance rule**: add the code to `AdapterConformanceCode`,
   write the check, and add a case to `conformance/cases.json`. A code with no
   case fails the suite. Say in the case's `why` what operational failure the
   rule prevents; a rule that cannot name one does not belong.
-- **Changing anything an adapter declares**: `examples/meridian-bank` must
-  still certify, and its fixtures must still match the declaration.
+- **Changing anything an adapter declares**: the generic and subject fixtures must
+  still pass registry validation and conformance.
 
 ## Conventions
 
-- No runtime dependencies. This package has zero and keeps zero.
+- Use the existing UDL field schemas and Zod validators.
 - Comments explain constraints the code cannot show, not what the next line
   does.
 - Findings are messages a stranger can act on: name the fact that is missing
   and what breaks without it.
-- Conformance codes are append-only. Renaming or removing a released code
-  breaks every consumer switching on it.
 
 ## Proposals
 

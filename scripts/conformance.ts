@@ -1,7 +1,7 @@
 /**
- * Run partner-bank conformance against an adapter module.
+ * Run adapter conformance against an adapter module.
  *
- *   bun run conformance -- ./examples/meridian-bank
+ *   bun run conformance -- ./src/boundary-fixture.ts
  *   bun run conformance -- ./path/to/your/adapter.ts
  *
  * The module may export a single adapter or an array of them, under any
@@ -14,7 +14,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import {
-  partnerBankConformanceFindings,
+  adapterConformanceFindings,
   type ProviderAdapter,
 } from "../src/index.js";
 
@@ -37,7 +37,7 @@ for (const target of targets) {
   }
   for (const adapter of adapters) {
     adapterCount += 1;
-    const findings = partnerBankConformanceFindings(adapter);
+    const findings = adapterConformanceFindings(adapter);
     const identity = `${adapter.provider}:${adapter.capability}`;
     if (findings.length === 0) {
       console.log(`ok    ${identity}`);

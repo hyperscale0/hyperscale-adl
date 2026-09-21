@@ -1,16 +1,16 @@
 /**
  * Loader and mutation applier for `conformance/cases.json`.
  *
- * A case is a path-addressed edit of the certified base declaration, applied
+ * A case is a path-addressed edit of the base declaration, applied
  * to a deep clone. Paths are arrays of keys rather than dotted strings
- * because operation names contain dots ("payout.submit"), and a missing
+ * because operation names contain dots ("boundary.observe"), and a missing
  * parent throws rather than silently creating one, so a typo in the data is a
  * failing test instead of a vacuous pass.
  */
 
 import { readFileSync } from "node:fs";
 
-import type { PartnerBankConformanceCode } from "../../src/index.js";
+import type { AdapterConformanceCode } from "../../src/index.js";
 
 export interface ConformanceCase {
   readonly id: string;
@@ -24,7 +24,7 @@ export interface ConformanceCase {
     readonly delete?: readonly (readonly string[])[];
   };
   readonly load: "accepts" | { readonly throws: string };
-  readonly conformance: readonly PartnerBankConformanceCode[];
+  readonly conformance: readonly AdapterConformanceCode[];
   readonly schema: "accepts" | "rejects";
   readonly note?: string;
 }

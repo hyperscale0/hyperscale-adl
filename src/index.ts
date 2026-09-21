@@ -1,48 +1,77 @@
+import * as z from "zod";
+import { udlObjectFieldSchema, type UdlObjectField } from "@hyperscale0/udl";
 import {
   providerKeyPattern,
-  statementAvailabilities,
-  type ChargePosting,
-  type ChargeVatMode,
-  type FinancialAddressMechanism,
-  type FinancialAddressPricing,
-  type FinancialAddressQuota,
-  type FxRateReadBack,
-  type LimitAccessMode,
-  type LimitDimension,
-  type PartnerBankDedupeKey,
-  type PartnerBankLifecycleState,
-  type PartnerBankSigning,
-  type PartnerBankStatementFormat,
-  type PartnerBankWireCodec,
-  type ProviderAuthEnvelope,
+  subjectFieldTypes,
   type ProviderEgressMode,
-  type ProviderNotificationMechanism,
   type ProviderOperationDirection,
   type ProviderResourceBinding,
   type ProviderResponseEnvelope,
   type ProviderTimestampField,
-  type RailSubstitution,
-  type StatementAvailability,
-  type StatementDebitReference,
-  type StatusEnquiryKey,
-  type ValueDateOffset,
+  type SubjectFieldType,
 } from "./vocabulary.js";
 
-export {
-  certifyPartnerBankAdapter,
-  partnerBankConformanceCodes,
-  partnerBankConformanceFindings,
-  type PartnerBankConformanceCode,
-  type PartnerBankConformanceFinding,
-} from "./conformance.js";
-
-export { statementAvailabilities };
+export { subjectFieldTypes };
 export type {
   ProviderEgressMode,
   ProviderOperationDirection,
   ProviderResourceBinding,
   ProviderResponseEnvelope,
+  SubjectFieldType,
 };
+
+const boundaryId = z.string().min(1).max(240);
+export const boundaryOutcomeSchema = z.enum([
+  "acknowledged",
+  "unknown",
+  "confirmed",
+  "rejected",
+]);
+export const boundaryInstructionSchema = z
+  .strictObject({
+    id: boundaryId,
+    environment: z.enum(["sandbox", "live"]),
+    tenantId: boundaryId,
+    productId: boundaryId,
+    productBuildId: boundaryId,
+    buildDigest: boundaryId,
+    target: z
+      .strictObject({
+        kind: boundaryId,
+        attachment: boundaryId,
+        instanceId: boundaryId,
+      })
+      .readonly(),
+    sourceAccountId: boundaryId,
+    destinationAccountId: boundaryId,
+    amount: z.string().regex(/^[1-9][0-9]{0,17}$/),
+    currency: z.string().regex(/^[A-Z]{3}$/),
+    adapter: z.string().regex(providerKeyPattern),
+  })
+  .readonly();
+export const boundaryObservationSchema = z
+  .strictObject({
+    adapter: z.string().regex(providerKeyPattern),
+    externalReference: boundaryId,
+    instructionId: boundaryId,
+    outcome: boundaryOutcomeSchema,
+    observedAt: z.iso.datetime(),
+  })
+  .readonly();
+export type BoundaryInstruction = z.infer<typeof boundaryInstructionSchema>;
+export type BoundaryObservation = z.infer<typeof boundaryObservationSchema>;
+export type BoundaryOutcome = z.infer<typeof boundaryOutcomeSchema>;
+
+/** Adapter implementation. Dispatch and enquiry never choose money bindings. */
+export interface BoundaryAdapter {
+  readonly id: string;
+  dispatch(
+    instruction: BoundaryInstruction,
+  ): Promise<BoundaryObservation | undefined>;
+  observe(
+    instruction: BoundaryInstruction,
+  ): Promise<BoundaryObservation | undefined>;
+}
 
 export interface ProviderAdapterVocabulary {
   readonly capability: string;
@@ -69,7 +98,6 @@ export interface ProviderAdapter<
   readonly operationMap: Partial<
     Record<Vocabulary["operation"], ProviderOperationBinding<Vocabulary>>
   >;
-  readonly profile?: PartnerBankAdapterProfile;
   readonly provider: string;
   readonly webhookMap: Readonly<
     Record<string, ProviderWebhookTransitionPlan<Vocabulary>>
@@ -79,15 +107,6 @@ export interface ProviderAdapter<
 export interface ProviderOperationBinding<
   Vocabulary extends ProviderAdapterVocabulary = ProviderAdapterVocabulary,
 > {
-  /**
-   * Authoritative read-after-write status enquiry for a command whose response
-   * may have been lost. Presence is an explicit provider-readiness commitment;
-   * runtimes must never infer enquiry support from the command URL.
-   */
-  readonly statusEnquiry?: {
-    readonly keys: StatusEnquiryKey;
-    readonly pathTemplate: string;
-  };
   /**
    * How THIS operation's response carries its outcome. Per operation, never
    * per provider and never inherited from another provider's class: one real
@@ -103,6 +122,14 @@ export interface ProviderOperationBinding<
   readonly obligationKind: Vocabulary["obligation"];
   readonly resourceIdPath: string;
   readonly resourceKind: Vocabulary["resource"];
+  /**
+   * Stored object metadata fields required by this operation. An array of UDL
+   * object fields validated against the exported UDL schema and the closed
+   * subject field type vocabulary. Absence means requirements are undeclared;
+   * an explicit empty array declares no requirements. Neither implies
+   * provider readiness.
+   */
+  readonly subjectRequirements?: readonly UdlObjectField[];
 }
 
 export interface ProviderWebhookTransitionPlan<
@@ -134,149 +161,6 @@ export interface ProviderConfig {
   readonly credentialRef?: ProviderCredentialReference;
 }
 
-/**
- * The fetch window facts for one declared statement format. The paging fields
- * are required for an end-of-day format (`availability: "T-1"` pages over
- * history) and absent for an intraday one; conformance enforces that split.
- */
-export interface PartnerBankStatementWindow {
-  readonly availability: StatementAvailability;
-  readonly lookbackDays?: number;
-  readonly statementDaysPerRequest?: number;
-}
-
-export interface PartnerBankAdapterProfile {
-  readonly auth: {
-    readonly envelope: ProviderAuthEnvelope;
-    readonly signing: PartnerBankSigning;
-  };
-  /**
-   * How the bank bills its own charges. `posting` says when the charge lands
-   * (debited separately after the payment, or netted out of the instructed
-   * amount); `vat` says whether the tax arrives as its own ledger line or
-   * folded into the charge. Absent when a bank's charge behavior is not
-   * established -- an unmodeled dimension, not a claim of post-hoc billing.
-   */
-  readonly charges?: {
-    /**
-     * The text this bank prints on its own charge lines, as prefixes: the
-     * trailing part names the charged thing. Recognizing a charge is Executor
-     * knowledge, so it is declared per bank and never inferred downstream, and
-     * a bank whose charge wording is not established leaves this absent rather
-     * than borrowing another bank's words.
-     */
-    readonly narratives?: {
-      readonly charge: readonly string[];
-      readonly vat: readonly string[];
-    };
-    readonly posting: ChargePosting;
-    readonly vat: ChargeVatMode;
-  };
-  readonly executedReadBack: {
-    readonly fxRate: FxRateReadBack;
-    readonly railSubstitution: RailSubstitution;
-  };
-  readonly idempotencySpine: {
-    readonly dedupeKeys: readonly PartnerBankDedupeKey[];
-    readonly endToEndId: { readonly maxLength: number };
-    readonly instructionId: { readonly maxLength: number };
-    readonly paymentReference: { readonly maxLength: number };
-  };
-  readonly kind: "partner_bank";
-  readonly lifecycleVocabulary: Readonly<
-    Record<string, PartnerBankLifecycleState>
-  >;
-  readonly limitFacts: {
-    readonly access: LimitAccessMode;
-    readonly dimensions: readonly LimitDimension[];
-  };
-  readonly notificationMechanisms: readonly ProviderNotificationMechanism[];
-  /**
-   * Which reference on a statement debit line names the instruction behind it.
-   * A statement entry carries two: the bank's own entry reference and the
-   * client reference the instruction was sent with. Banks disagree about which
-   * one comes back on the statement, and picking the wrong one makes every
-   * payout the platform instructed look like an unexplained debit. Absent when
-   * a bank's statement reference identity is not established.
-   */
-  readonly statementDebitReference?: StatementDebitReference;
-  readonly statementFormats: readonly PartnerBankStatementFormat[];
-  readonly financialAddressProvisioning: {
-    readonly mechanism: FinancialAddressMechanism;
-    readonly pricing: FinancialAddressPricing;
-    readonly quota: FinancialAddressQuota;
-  };
-  readonly windows: {
-    readonly paymentCutoff: {
-      readonly afterCutoffValueDate: ValueDateOffset;
-      readonly beforeCutoffValueDate: ValueDateOffset;
-      /** Bank-local wall-clock time, HH:MM. */
-      readonly time: string;
-      /** The IANA time zone the cutoff time is read in (e.g. Europe/Dublin). */
-      readonly timeZone: string;
-    };
-    /** One window per declared statement format, keyed by that format. */
-    readonly statements: Partial<
-      Readonly<Record<PartnerBankStatementFormat, PartnerBankStatementWindow>>
-    >;
-    readonly valueDateMaxDaysAhead: number;
-  };
-  readonly wireCodec: PartnerBankWireCodec;
-}
-
-/**
- * The insurance-distribution marketplace class, the partner bank's opposite
- * number: an aggregator API whose whole truth arrives in the command
- * response. Every field below is a recorded observation of one such surface,
- * not a reading of a standard.
- *
- * What makes the class distinct from `partner_bank`, and why each field exists:
- *
- *   - **Nothing to poll.** No status enquiry, no list, no read-back, no
- *     webhook, on any line. `notificationMechanisms` is empty by evidence, and
- *     the issuance response is the ONLY carrier of the policy identity -- so
- *     the transport must capture it durably BEFORE acknowledging the caller.
- *   - **No idempotency header exists anywhere in the corpus.** Dedupe runs on
- *     caller-minted business reference numbers replayed verbatim at each step,
- *     which is why the spine is a reference chain rather than a key.
- *   - **Auth is a bespoke credential exchange**, not OAuth2 client
- *     credentials: username/password against the provider's own login route
- *     yields a bearer with no documented lifetime, refresh, or scope.
- *   - **Errors are prose.** No machine error code appears anywhere, so an
- *     adapter cannot build a decline taxonomy from the docs alone.
- */
-export interface InsuranceDistributorAdapterProfile {
-  readonly kind: "insurance_distributor";
-  readonly wireCodec: "rest_json";
-  readonly auth: {
-    readonly envelope: ProviderAuthEnvelope;
-    /** How the bearer is obtained, when the provider documents it at all. */
-    readonly acquisition: "password_login" | "out_of_band";
-    readonly signing: "none";
-  };
-  /**
-   * Envelope class per DOCUMENTED operation name, because one provider answers
-   * in more than one shape. Keys are the provider's own operation names, not
-   * platform operations -- this profile describes a surface no adapter has
-   * integrated yet.
-   */
-  readonly envelopes: Readonly<Record<string, ProviderResponseEnvelope>>;
-  /**
-   * The correlation chain that stands in for an idempotency key: which
-   * references the CALLER mints and which the provider mints, in the order the
-   * exchange replays them.
-   */
-  readonly referenceChain: {
-    readonly clientMinted: readonly string[];
-    readonly providerMinted: readonly string[];
-  };
-  readonly notificationMechanisms: readonly ProviderNotificationMechanism[];
-  /** Whether the provider publishes machine-readable failure codes. */
-  readonly errorModel: "prose_only" | "coded";
-  /** True when the command response is the only carrier of the created fact. */
-  readonly captureBeforeAcknowledge: boolean;
-}
-
 /** Validate an adapter registry once at load, then preserve its exact type. */
 function defineProviderAdapters<
   Vocabulary extends ProviderAdapterVocabulary,
@@ -295,9 +179,6 @@ function defineProviderAdapters<
     validateConfig(adapter.provider, adapter.config);
     validateOperations(adapter);
     validateWebhooks(adapter);
-    if (adapter.profile) {
-      validatePartnerBankProfile(adapter.provider, adapter.profile);
-    }
   }
   return adapters;
 }
@@ -347,20 +228,34 @@ function validateOperations<Vocabulary extends ProviderAdapterVocabulary>(
       `${operation}.resourceIdPath`,
       binding.resourceIdPath,
     );
-    if (binding.statusEnquiry) {
-      assertNonblank(
-        adapter.provider,
-        `${operation}.statusEnquiry.pathTemplate`,
-        binding.statusEnquiry.pathTemplate,
-      );
-      const placeholder =
-        binding.statusEnquiry.keys === "instruction_id"
-          ? "{instructionId}"
-          : "{providerReference}";
-      if (!binding.statusEnquiry.pathTemplate.includes(placeholder)) {
+    if (binding.subjectRequirements !== undefined) {
+      if (
+        !Array.isArray(binding.subjectRequirements) ||
+        binding.subjectRequirements.length > 128
+      ) {
         throw new Error(
-          `${adapter.provider} ${operation}.statusEnquiry.pathTemplate must include ${placeholder}`,
+          `${adapter.provider} ${operation}.subjectRequirements must be an array of at most 128 fields`,
         );
+      }
+      for (const [
+        index,
+        requirement,
+      ] of binding.subjectRequirements.entries()) {
+        const result = udlObjectFieldSchema.safeParse(requirement);
+        if (!result.success || result.data.optional) {
+          throw new Error(
+            `${adapter.provider} ${operation}.subjectRequirements[${index}] does not match UDL object field schema: ${result.success ? "action requirements cannot be optional" : result.error.message}`,
+          );
+        }
+        if (
+          !subjectFieldTypes.includes(
+            requirement.type as (typeof subjectFieldTypes)[number],
+          )
+        ) {
+          throw new Error(
+            `${adapter.provider} ${operation}.subjectRequirements[${index}] unknown subject field type ${requirement.type}`,
+          );
+        }
       }
     }
   }
@@ -378,124 +273,78 @@ function validateWebhooks<Vocabulary extends ProviderAdapterVocabulary>(
   }
 }
 
-function validatePartnerBankProfile(
-  provider: string,
-  profile: PartnerBankAdapterProfile,
-): void {
-  if (!profile.notificationMechanisms.includes("poll")) {
-    throw new Error(`${provider} partner-bank profile must support polling`);
-  }
-  if (Object.keys(profile.lifecycleVocabulary).length === 0) {
-    throw new Error(
-      `${provider} partner-bank profile has no lifecycle vocabulary`,
-    );
-  }
-  assertUnique(provider, "statementFormats", profile.statementFormats);
-  assertUnique(
-    provider,
-    "notificationMechanisms",
-    profile.notificationMechanisms,
-  );
-  assertUnique(
-    provider,
-    "limitFacts.dimensions",
-    profile.limitFacts.dimensions,
-  );
-  const spine = profile.idempotencySpine;
-  // The dedupe keys widened from a fixed triple to a list, so the list now
-  // carries the guarantees the tuple used to give for free.
-  if (spine.dedupeKeys.length === 0) {
-    throw new Error(`${provider} idempotencySpine.dedupeKeys is empty`);
-  }
-  assertUnique(provider, "idempotencySpine.dedupeKeys", spine.dedupeKeys);
-  const spineLimits = {
-    endToEndId: spine.endToEndId,
-    instructionId: spine.instructionId,
-    paymentReference: spine.paymentReference,
-  };
-  for (const [field, limit] of Object.entries(spineLimits)) {
-    assertPositiveInteger(
-      provider,
-      `idempotencySpine.${field}.maxLength`,
-      limit.maxLength,
-    );
-  }
-  const windows = profile.windows;
-  if (!/^\d{2}:\d{2}$/.test(windows.paymentCutoff.time)) {
-    throw new Error(`${provider} windows.paymentCutoff.time must be HH:MM`);
-  }
-  // Intl.DateTimeFormat treats an undefined timeZone as the runtime default,
-  // so presence must be checked before validity.
-  const timeZone: unknown = windows.paymentCutoff.timeZone;
-  if (typeof timeZone !== "string") {
-    throw new Error(
-      `${provider} windows.paymentCutoff.timeZone must be a valid IANA time zone`,
-    );
-  }
-  try {
-    new Intl.DateTimeFormat("en", { timeZone });
-  } catch {
-    throw new Error(
-      `${provider} windows.paymentCutoff.timeZone must be a valid IANA time zone`,
-    );
-  }
-  assertPositiveInteger(
-    provider,
-    "windows.valueDateMaxDaysAhead",
-    windows.valueDateMaxDaysAhead,
-  );
-  for (const [format, window] of Object.entries(windows.statements)) {
-    // TS requires availability, but a plain-JS consumer can send a window
-    // without one, and an availability-less window is unschedulable.
-    if (
-      !(statementAvailabilities as readonly unknown[]).includes(
-        window.availability,
-      )
-    ) {
-      throw new Error(
-        `${provider} windows.statements.${format}.availability must be one ` +
-          `of ${statementAvailabilities.join(", ")}`,
-      );
-    }
-    if (window.lookbackDays !== undefined) {
-      assertPositiveInteger(
-        provider,
-        `windows.statements.${format}.lookbackDays`,
-        window.lookbackDays,
-      );
-    }
-    if (window.statementDaysPerRequest !== undefined) {
-      assertPositiveInteger(
-        provider,
-        `windows.statements.${format}.statementDaysPerRequest`,
-        window.statementDaysPerRequest,
-      );
-    }
-  }
-}
-
-function assertPositiveInteger(
-  provider: string,
-  field: string,
-  value: number,
-): void {
-  if (!Number.isInteger(value) || value <= 0) {
-    throw new Error(`${provider} ${field} must be a positive integer`);
-  }
-}
-
-function assertUnique(
-  provider: string,
-  field: string,
-  values: readonly string[],
-): void {
-  if (new Set(values).size !== values.length) {
-    throw new Error(`${provider} ${field} contains duplicates`);
-  }
-}
-
 function assertNonblank(provider: string, field: string, value: string): void {
   if (value.trim().length === 0) {
     throw new Error(`${provider} ${field} must not be blank`);
   }
+}
+
+export type AdapterConformanceCode =
+  | "operation_map_empty"
+  | "resource_binding_missing"
+  | "declaration_invalid";
+export interface AdapterConformanceFinding {
+  readonly code: AdapterConformanceCode;
+  readonly message: string;
+  readonly path: string;
+}
+
+export function adapterConformanceFindings<
+  Vocabulary extends ProviderAdapterVocabulary,
+>(adapter: ProviderAdapter<Vocabulary>): readonly AdapterConformanceFinding[] {
+  const findings = bindingFindings(adapter);
+  if (Object.keys(adapter.operationMap).length === 0)
+    findings.unshift({
+      code: "operation_map_empty",
+      path: "operationMap",
+      message: "An adapter must declare an operation.",
+    });
+  try {
+    createProviderAdapterRegistry<Vocabulary>()([adapter]);
+  } catch (error) {
+    findings.push({
+      code: "declaration_invalid",
+      path: "",
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+  return findings;
+}
+
+function bindingFindings<Vocabulary extends ProviderAdapterVocabulary>(
+  adapter: ProviderAdapter<Vocabulary>,
+): AdapterConformanceFinding[] {
+  const findings: AdapterConformanceFinding[] = [];
+  const bindings = adapter.bindings as Readonly<
+    Record<string, ProviderResourceBinding | undefined>
+  >;
+  const claimed = new Set<string>();
+
+  const require = (kind: string, path: string) => {
+    if (bindings[kind] !== undefined || claimed.has(kind)) return;
+    claimed.add(kind);
+    // Provider facts commit onto platform resources through a declared match
+    // mode; a resource the adapter settles without one has no lawful way to
+    // bind the observation.
+    findings.push({
+      code: "resource_binding_missing",
+      message:
+        `resource kind ${kind} is settled by this adapter but declares no ` +
+        "binding mode, so provider facts have no lawful way to commit",
+      path,
+    });
+  };
+
+  for (const binding of Object.values(adapter.operationMap) as (
+    | ProviderOperationBinding<Vocabulary>
+    | undefined
+  )[]) {
+    if (!binding) continue;
+    require(binding.resourceKind, `bindings.${binding.resourceKind}`);
+  }
+  for (const plan of Object.values(adapter.webhookMap)) {
+    require(plan.resourceKind, `bindings.${plan.resourceKind}`);
+  }
+
+  return findings;
 }

@@ -1,65 +1,15 @@
-/**
- * How certification reports, as opposed to what it checks. The rules
- * themselves are `conformance/cases.json`.
- */
-
 import { describe, expect, test } from "bun:test";
-
-import { meridianAdapters } from "../examples/meridian-bank/index.js";
+import { genericAdapter } from "../src/boundary-fixture.js";
 import {
-  certifyPartnerBankAdapter,
+  adapterConformanceFindings,
+  boundaryInstructionSchema,
+  boundaryObservationSchema,
   createProviderAdapterRegistry,
-  partnerBankConformanceFindings,
   type ProviderAdapter,
 } from "../src/index.js";
 import { applyCase, loadCases, loadSchema } from "./support/cases.js";
 import { schemaViolations } from "./support/json-schema.js";
-
-const [payoutAdapter] = meridianAdapters as readonly ProviderAdapter[];
-if (!payoutAdapter) throw new Error("the example's payout adapter is missing");
-
 const defineAdapters = createProviderAdapterRegistry();
-
-describe("partner-bank certification", () => {
-  test("a certified adapter throws nothing and reports nothing", () => {
-    expect(partnerBankConformanceFindings(payoutAdapter)).toEqual([]);
-    expect(() => certifyPartnerBankAdapter(payoutAdapter)).not.toThrow();
-  });
-
-  test("a failure names the adapter and lists every finding", () => {
-    // One run reports everything it can see. An author fixing findings one
-    // throw at a time would take as many runs as there are gaps.
-    const broken = {
-      ...payoutAdapter,
-      bindings: {},
-      profile: { ...payoutAdapter.profile, charges: undefined },
-    } as unknown as ProviderAdapter;
-
-    expect(() => certifyPartnerBankAdapter(broken)).toThrow(
-      /meridian_bank:payout_execution failed partner-bank conformance \(2 findings\):[\s\S]*resource_binding_missing[\s\S]*charges_unestablished/,
-    );
-  });
-
-  test("a single finding is reported in the singular", () => {
-    const broken = { ...payoutAdapter, bindings: {} };
-    expect(() => certifyPartnerBankAdapter(broken)).toThrow(
-      "conformance (1 finding):",
-    );
-  });
-});
-
-describe("provider adapter plug-in registry", () => {
-  test("preserves a valid registry's exact objects", () => {
-    const adapters = [payoutAdapter] as const;
-    expect(defineAdapters(adapters)).toBe(adapters);
-  });
-
-  test("rejects duplicate provider-capability identities", () => {
-    expect(() => defineAdapters([payoutAdapter, payoutAdapter])).toThrow(
-      "duplicate provider adapter meridian_bank:payout_execution",
-    );
-  });
-});
 
 describe("conformance corpus", () => {
   const cases = loadCases();
@@ -76,7 +26,7 @@ describe("conformance corpus", () => {
 
   for (const testCase of cases) {
     describe(testCase.id, () => {
-      const declaration = applyCase(payoutAdapter, testCase);
+      const declaration = applyCase(genericAdapter, testCase);
 
       test("registry load", () => {
         const thrown = loadThrows(declaration);
@@ -88,7 +38,7 @@ describe("conformance corpus", () => {
       });
 
       test("conformance", () => {
-        const codes = partnerBankConformanceFindings(
+        const codes = adapterConformanceFindings(
           declaration as unknown as ProviderAdapter,
         ).map((finding) => finding.code);
         expect(codes).toEqual([...testCase.conformance]);
@@ -104,4 +54,60 @@ describe("conformance corpus", () => {
       });
     });
   }
+});
+
+test("refuses duplicate provider capability identities", () => {
+  expect(() => defineAdapters([genericAdapter, genericAdapter])).toThrow(
+    "duplicate provider adapter",
+  );
+});
+
+const instruction = {
+  id: "reserve1",
+  environment: "sandbox",
+  tenantId: "tenant1",
+  productId: "product1",
+  productBuildId: "build1",
+  buildDigest: "digest1",
+  target: { kind: "order", attachment: "payout", instanceId: "target1" },
+  sourceAccountId: "source1",
+  destinationAccountId: "destination1",
+  amount: "100",
+  currency: "SAR",
+  adapter: "conformance_boundary",
+};
+const observation = {
+  adapter: "conformance_boundary",
+  externalReference: "observation1",
+  instructionId: "reserve1",
+  outcome: "confirmed",
+  observedAt: "2026-09-20T00:00:00Z",
+} as const;
+
+test.each(Object.keys(instruction))(
+  "instruction requires binding %s",
+  (field) => {
+    const incomplete: Record<string, unknown> = { ...instruction };
+    delete incomplete[field];
+    expect(boundaryInstructionSchema.safeParse(incomplete).success).toBe(false);
+  },
+);
+test.each(["accepted", "200", "settled"])(
+  "refuses inferred terminal outcome %s",
+  (outcome) => {
+    expect(
+      boundaryObservationSchema.safeParse({ ...observation, outcome }).success,
+    ).toBe(false);
+  },
+);
+test.each(["0", "-1", "1.5"])(
+  "refuses nonpositive or fractional amount %s",
+  (amount) => {
+    expect(
+      boundaryInstructionSchema.safeParse({ ...instruction, amount }).success,
+    ).toBe(false);
+  },
+);
+test("accepts an explicit observation without changing its outcome", () => {
+  expect(boundaryObservationSchema.parse(observation)).toEqual(observation);
 });
