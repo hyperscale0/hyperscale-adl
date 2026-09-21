@@ -133,6 +133,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "money"
@@ -173,6 +177,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "ref"
@@ -183,6 +191,32 @@
                 "instrument",
                 "object"
               ]
+            },
+            "targetFamily": {
+              "type": "object",
+              "properties": {
+                "module": {
+                  "type": "string",
+                  "maxLength": 80,
+                  "pattern": "^[a-z][a-zA-Z0-9_]*$"
+                },
+                "exportPath": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^[a-z][a-zA-Z0-9_]*(?:\\.[a-z][a-zA-Z0-9_]*)*$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "module",
+                "exportPath",
+                "revision"
+              ],
+              "additionalProperties": false
             },
             "target": {
               "anyOf": [
@@ -229,6 +263,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "date"
@@ -262,6 +300,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "duration"
@@ -294,6 +336,10 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 2048
+            },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
             },
             "type": {
               "type": "string",
@@ -342,6 +388,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "integer"
@@ -385,6 +435,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "percent"
@@ -418,6 +472,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "boolean"
@@ -448,6 +506,10 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 2048
+            },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
             },
             "type": {
               "type": "string",
@@ -493,6 +555,10 @@
               "minLength": 1,
               "maxLength": 2048
             },
+            "sensitive": {
+              "type": "boolean",
+              "const": true
+            },
             "type": {
               "type": "string",
               "const": "list"
@@ -513,6 +579,32 @@
                 "instrument",
                 "object"
               ]
+            },
+            "targetFamily": {
+              "type": "object",
+              "properties": {
+                "module": {
+                  "type": "string",
+                  "maxLength": 80,
+                  "pattern": "^[a-z][a-zA-Z0-9_]*$"
+                },
+                "exportPath": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^[a-z][a-zA-Z0-9_]*(?:\\.[a-z][a-zA-Z0-9_]*)*$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "module",
+                "exportPath",
+                "revision"
+              ],
+              "additionalProperties": false
             },
             "target": {
               "type": "string",
