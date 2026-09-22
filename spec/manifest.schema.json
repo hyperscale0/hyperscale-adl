@@ -124,6 +124,11 @@
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
             },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
             "optional": {
               "type": "boolean",
               "const": true
@@ -167,6 +172,11 @@
               "type": "string",
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
             },
             "optional": {
               "type": "boolean",
@@ -254,6 +264,11 @@
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
             },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
             "optional": {
               "type": "boolean",
               "const": true
@@ -291,6 +306,11 @@
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
             },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
             "optional": {
               "type": "boolean",
               "const": true
@@ -327,6 +347,11 @@
               "type": "string",
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
             },
             "optional": {
               "type": "boolean",
@@ -379,6 +404,11 @@
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
             },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
             "optional": {
               "type": "boolean",
               "const": true
@@ -426,6 +456,11 @@
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
             },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
             "optional": {
               "type": "boolean",
               "const": true
@@ -463,6 +498,11 @@
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
             },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
             "optional": {
               "type": "boolean",
               "const": true
@@ -497,6 +537,11 @@
               "type": "string",
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
             },
             "optional": {
               "type": "boolean",
@@ -545,6 +590,11 @@
               "type": "string",
               "maxLength": 80,
               "pattern": "^[a-z][a-zA-Z0-9_]*$"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
             },
             "optional": {
               "type": "boolean",
