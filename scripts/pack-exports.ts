@@ -1,17 +1,10 @@
 /**
- * Pack-time entry-point rewrite (prepack applies, postpack restores).
- *
- * The workspace package.json must keep every entry point on src/index.ts:
- * vite-plus resolves this package with node-like conditions, so any
- * dist-pointing mapping visible to the monorepo would read the untracked
- * (gate-cleaned, potentially stale) dist/ build during `vp test`. The
- * published tarball needs the opposite -- native Node cannot import .ts from
- * node_modules -- so the tarball alone gets dist-pointing entries, the same
- * split pnpm formalizes as publishConfig field overrides.
+ * Pack-time entry-point rewrite (prepack applies, postpack restores). The
+ * workspace keeps entry points on src/index.ts so `vp test` never reads a stale
+ * dist/; the tarball points at dist/ because Node cannot import .ts from
+ * node_modules.
  */
 const packageJsonPath = new URL("../package.json", import.meta.url);
-
-const schemaEntry = "./spec/manifest.schema.json";
 
 const sourceEntries = {
   main: "./src/index.ts",
@@ -20,7 +13,6 @@ const sourceEntries = {
   exports: {
     ".": "./src/index.ts",
     "./boundary-fixture": "./src/boundary-fixture.ts",
-    [schemaEntry]: schemaEntry,
     "./package.json": "./package.json",
   },
 };
@@ -35,7 +27,6 @@ const distEntries = {
       types: "./dist/boundary-fixture.d.ts",
       default: "./dist/boundary-fixture.js",
     },
-    [schemaEntry]: schemaEntry,
     "./package.json": "./package.json",
   },
 };

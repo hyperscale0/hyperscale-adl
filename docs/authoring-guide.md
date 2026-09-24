@@ -11,13 +11,12 @@ key must equal its binding's `operation`. Its `resourceKind` must appear in
 `bindings`. Subject requirements describe required authored fields or attachments;
 they never supply an account or choose a party.
 
-The [generic fixture](../src/boundary-fixture.ts) declares one boundary
+The [boundary adapter](../src/boundary-fixture.ts) declares one boundary
 observation operation with no subject requirements. The
 [subject fixture](../conformance/subject-adapter.ts) shows required subject fields.
 
-`adapterConformanceFindings` checks the declaration. The
-[manifest schema](../spec/manifest.schema.json) expresses the same public shape
-for non-TypeScript authors. Neither check contacts a provider.
+`adapterConformanceFindings` checks the declaration without contacting a
+provider.
 
 ## Dispatch an instruction
 
@@ -43,10 +42,7 @@ From this package:
 
 ```sh
 bun run conformance -- ./src/boundary-fixture.ts
-bun run spec:emit
 ```
 
-The conformance command exits 1 when it reports a finding. The schema emitter
-writes the declaration schema and the `BoundaryInstruction` and
-`BoundaryObservation` definitions. Add a case in `conformance/cases.json` when a
+The conformance command exits 1 when it reports a finding. Add a case in `conformance/cases.json` when a
 new declaration rule prevents a concrete failure.

@@ -1,6 +1,6 @@
 {
   "name": "@hyperscale0/adl",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "description": "The Adapter Declaration Language: generic evidence, provider declarations and conformance.",
   "keywords": [
     "adl",
@@ -28,7 +28,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./boundary-fixture": "./src/boundary-fixture.ts",
-    "./spec/manifest.schema.json": "./spec/manifest.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -40,8 +39,7 @@
     "SECURITY.md",
     "conformance",
     "dist",
-    "docs",
-    "spec"
+    "docs"
   ],
   "engines": {
     "node": ">=20.0.0"
@@ -51,17 +49,15 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "check": "bun run spec:check && bun test && tsc -p tsconfig.json",
+    "check": "bun test && tsc -p tsconfig.json",
     "conformance": "bun scripts/conformance.ts",
     "postpack": "bun scripts/pack-exports.ts restore",
     "prepack": "bun run build && bun scripts/pack-exports.ts apply",
-    "spec:check": "bun scripts/emit-spec.ts --check",
-    "spec:emit": "bun scripts/emit-spec.ts",
     "test": "bun test",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@hyperscale0/udl": "4.9.0",
+    "@hyperscale0/udl": "5.0.0",
     "zod": "4.6.5"
   },
   "devDependencies": {

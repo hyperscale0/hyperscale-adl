@@ -3,20 +3,15 @@ import { udlObjectFieldSchema, type UdlObjectField } from "@hyperscale0/udl";
 import {
   providerKeyPattern,
   subjectFieldTypes,
-  type ProviderEgressMode,
   type ProviderOperationDirection,
   type ProviderResourceBinding,
-  type ProviderResponseEnvelope,
-  type ProviderTimestampField,
   type SubjectFieldType,
 } from "./vocabulary.js";
 
 export { subjectFieldTypes };
 export type {
-  ProviderEgressMode,
   ProviderOperationDirection,
   ProviderResourceBinding,
-  ProviderResponseEnvelope,
   SubjectFieldType,
 };
 
@@ -75,14 +70,9 @@ export interface BoundaryAdapter {
 
 export interface ProviderAdapterVocabulary {
   readonly capability: string;
-  readonly domain: string;
-  readonly meter: string;
   readonly obligation: string;
   readonly operation: string;
   readonly resource: string;
-  readonly webhookOperation: string;
-  readonly webhookResource: string;
-  readonly webhookResourceId: string;
 }
 
 export interface ProviderAdapter<
@@ -92,33 +82,17 @@ export interface ProviderAdapter<
     Record<Vocabulary["resource"], ProviderResourceBinding>
   >;
   readonly capability: Vocabulary["capability"];
-  readonly config: ProviderConfig;
-  readonly domain?: Vocabulary["domain"];
-  readonly egress: ProviderEgressMode;
   readonly operationMap: Partial<
     Record<Vocabulary["operation"], ProviderOperationBinding<Vocabulary>>
   >;
   readonly provider: string;
-  readonly webhookMap: Readonly<
-    Record<string, ProviderWebhookTransitionPlan<Vocabulary>>
-  >;
 }
 
 export interface ProviderOperationBinding<
   Vocabulary extends ProviderAdapterVocabulary = ProviderAdapterVocabulary,
 > {
-  /**
-   * How THIS operation's response carries its outcome. Per operation, never
-   * per provider and never inherited from another provider's class: one real
-   * provider answers two ways, wrapping six of seven endpoints in
-   * `{status, message, data}` while the seventh returns a bare object. Absent
-   * means the class is not established yet -- an unclassified operation, not
-   * a silent `http_200_body_status`.
-   */
-  readonly envelope?: ProviderResponseEnvelope;
   readonly operation: Vocabulary["operation"];
   readonly direction: ProviderOperationDirection;
-  readonly meter?: Vocabulary["meter"];
   readonly obligationKind: Vocabulary["obligation"];
   readonly resourceIdPath: string;
   readonly resourceKind: Vocabulary["resource"];
@@ -130,35 +104,6 @@ export interface ProviderOperationBinding<
    * provider readiness.
    */
   readonly subjectRequirements?: readonly UdlObjectField[];
-}
-
-export interface ProviderWebhookTransitionPlan<
-  Vocabulary extends ProviderAdapterVocabulary = ProviderAdapterVocabulary,
-> {
-  readonly eventKind: string;
-  readonly operationName: Vocabulary["webhookOperation"];
-  readonly optionalPayloadFields: readonly string[];
-  readonly requiredFieldGroups: readonly (readonly string[])[];
-  readonly requiredPayloadFields: readonly string[];
-  readonly resourceIdField: Vocabulary["webhookResourceId"];
-  readonly resourceKind: Vocabulary["webhookResource"];
-  readonly timestampField: ProviderTimestampField;
-}
-
-export type ProviderCredentialReference =
-  | {
-      readonly name: string;
-      readonly source: "environment";
-    }
-  | {
-      readonly account: string;
-      readonly service: string;
-      readonly source: "keychain";
-    };
-
-export interface ProviderConfig {
-  readonly baseUrl?: string;
-  readonly credentialRef?: ProviderCredentialReference;
 }
 
 /** Validate an adapter registry once at load, then preserve its exact type. */
@@ -176,9 +121,7 @@ function defineProviderAdapters<
       throw new Error(`duplicate provider adapter ${identity}`);
     }
     identities.add(identity);
-    validateConfig(adapter.provider, adapter.config);
     validateOperations(adapter);
-    validateWebhooks(adapter);
   }
   return adapters;
 }
@@ -191,24 +134,6 @@ export function createProviderAdapterRegistry<
 ) => Adapters {
   return (adapters) =>
     defineProviderAdapters<Vocabulary, typeof adapters>(adapters);
-}
-
-function validateConfig(provider: string, config: ProviderConfig): void {
-  if (config.baseUrl) {
-    try {
-      new URL(config.baseUrl);
-    } catch {
-      throw new Error(`${provider} config.baseUrl must be an absolute URL`);
-    }
-  }
-  const credential = config.credentialRef;
-  if (!credential) return;
-  if (credential.source === "environment") {
-    assertNonblank(provider, "config.credentialRef.name", credential.name);
-    return;
-  }
-  assertNonblank(provider, "config.credentialRef.account", credential.account);
-  assertNonblank(provider, "config.credentialRef.service", credential.service);
 }
 
 function validateOperations<Vocabulary extends ProviderAdapterVocabulary>(
@@ -257,18 +182,6 @@ function validateOperations<Vocabulary extends ProviderAdapterVocabulary>(
           );
         }
       }
-    }
-  }
-}
-
-function validateWebhooks<Vocabulary extends ProviderAdapterVocabulary>(
-  adapter: ProviderAdapter<Vocabulary>,
-): void {
-  for (const [event, plan] of Object.entries(adapter.webhookMap)) {
-    if (event !== plan.eventKind) {
-      throw new Error(
-        `${adapter.provider} webhookMap key ${event} must match eventKind ${plan.eventKind}`,
-      );
     }
   }
 }
@@ -341,9 +254,6 @@ function bindingFindings<Vocabulary extends ProviderAdapterVocabulary>(
   )[]) {
     if (!binding) continue;
     require(binding.resourceKind, `bindings.${binding.resourceKind}`);
-  }
-  for (const plan of Object.values(adapter.webhookMap)) {
-    require(plan.resourceKind, `bindings.${plan.resourceKind}`);
   }
 
   return findings;

@@ -6,24 +6,14 @@ runtime hits when it guesses instead.
 
 ## How changes get made
 
-This repository is issues-only. Hyperscale makes the changes to the manifest
-format and to the package; the public proposes them in an issue. That is the
-whole model, and it is stated up front so nobody spends a weekend on a branch
-that was never going to be merged.
+This repository is issues-only, so nobody spends a weekend on a branch that
+was never going to be merged. Hyperscale makes the changes to the manifest
+format and the package; the public proposes them in an issue.
 
-A proposal is an issue carrying two things: the provider that cannot be
-described without the change, and the conformance case it would add to
-`conformance/cases.json`. An issue with both is a design discussion; an issue
-with neither is a wish.
-
-Hyperscale accepts a pull request rarely, and only after asking for one. When
-that happens the maintainer who asked sends the CLA and the author signs it
-before the merge. The CLA lets Hyperscale LLC carry a contribution under the
-Hyperscale license and the commercial license it sells, so it is what makes a
-merge possible at all.
-
-The setup and the loop below are here because reading ADL, running the
-suite, and building the case for a proposal all need them.
+A proposal is one change per issue, carrying two things: the provider that
+cannot be described without the change, and the conformance case it would add
+to `conformance/cases.json`. An issue with both is a design discussion; an
+issue with neither is a wish.
 
 ## Setup
 
@@ -32,20 +22,17 @@ bun install
 bun run check
 ```
 
-`check` runs three things: `spec:check` (the published JSON Schema still
-matches `src/vocabulary.ts`), `bun test`, and `tsc`. Bun 1.4 or later.
+`check` runs `bun test` and `tsc`. Bun 1.4 or later.
 
 ## The loop
 
-- **Adding a value to a vocabulary** (an operation direction or an
-  auth envelope): edit `src/vocabulary.ts`, then `bun run spec:emit` and commit
-  the regenerated `spec/manifest.schema.json`. The two are checked against each
-  other, so a stale schema fails CI.
+- **Adding a value to a vocabulary** (an operation direction or a binding
+  mode): edit `src/vocabulary.ts`.
 - **Adding a conformance rule**: add the code to `AdapterConformanceCode`,
   write the check, and add a case to `conformance/cases.json`. A code with no
   case fails the suite. Say in the case's `why` what operational failure the
   rule prevents; a rule that cannot name one does not belong.
-- **Changing anything an adapter declares**: the generic and subject fixtures must
+- **Changing anything an adapter declares**: the boundary adapter and the subject fixture must
   still pass registry validation and conformance.
 
 ## Conventions
@@ -56,17 +43,13 @@ matches `src/vocabulary.ts`), `bun test`, and `tsc`. Bun 1.4 or later.
 - Findings are messages a stranger can act on: name the fact that is missing
   and what breaks without it.
 
-## Proposals
-
-One change per issue, with the case that proves it. Say what the change enables
-and which provider needed it.
-
 ## Contributor license agreement
 
-In the rare case Hyperscale accepts a pull request, the author signs
-[the CLA](CLA.md) first, and it only has to happen once. It lets Hyperscale
-LLC carry the contribution under the Hyperscale license and the commercial
-license it sells alongside it, and it carries the patent terms.
+Hyperscale accepts a pull request rarely, and only after asking for one. The
+author then signs [the CLA](CLA.md) before the merge; it only has to happen
+once. It lets Hyperscale LLC carry the contribution under the Hyperscale
+license and the commercial license it sells alongside it, and it carries the
+patent terms.
 
 ## Conduct
 

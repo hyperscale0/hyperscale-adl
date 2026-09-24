@@ -6,13 +6,11 @@ import {
   type BoundaryOutcome,
 } from "./index.js";
 
-/** Deterministic fixture. No transport, clock, accounts or inferred outcome. */
+/** The sandbox boundary adapter the platform registers. No transport, clock, accounts or inferred outcome. */
 export const genericAdapter = createProviderAdapterRegistry()([
   {
     provider: "conformance_boundary",
     capability: "boundary",
-    egress: "none",
-    config: {},
     bindings: { instruction: "strict" },
     operationMap: {
       "boundary.observe": {
@@ -24,7 +22,6 @@ export const genericAdapter = createProviderAdapterRegistry()([
         subjectRequirements: [],
       },
     },
-    webhookMap: {},
   },
 ] as const)[0];
 

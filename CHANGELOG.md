@@ -4,6 +4,11 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0.
 
+## [1.0.0-beta.11] - 2026-09-24
+
+- Cut the declaration to what registered adapters use. Removed `ProviderAdapter.config`, `egress`, `domain` and `webhookMap`, `ProviderConfig`, `ProviderCredentialReference`, `ProviderWebhookTransitionPlan`, `ProviderEgressMode`, `ProviderResponseEnvelope`, and the `envelope` and `meter` operation fields. `ProviderAdapterVocabulary` keeps `capability`, `obligation`, `operation` and `resource`.
+- Removed the published `spec/manifest.schema.json` and its `spec:emit` and `spec:check` scripts. Nothing consumed the schema; `createProviderAdapterRegistry` and `adapterConformanceFindings` remain the declaration checks.
+
 ## [1.0.0-beta.10] - 2026-09-23
 
 - Pin the public UDL dependency to 4.7.0 so ADL and HSX resolve the same contract version.

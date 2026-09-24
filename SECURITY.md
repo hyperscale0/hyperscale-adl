@@ -23,7 +23,3 @@ This package validates declarations. It performs no network calls, reads no
 credentials, and executes nothing an adapter author does not import
 themselves. Reports about the runtime that executes adapters belong to the
 platform, not here.
-
-`ProviderCredentialReference` stores locators only, never secret values. A
-declaration carrying a real credential is a mistake in that repository, not a
-vulnerability in this one, but tell us if ADL made it easy.

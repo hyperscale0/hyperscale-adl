@@ -15,8 +15,7 @@
         ]
       },
       "load": "accepts",
-      "conformance": ["operation_map_empty"],
-      "schema": "accepts"
+      "conformance": ["operation_map_empty"]
     },
     {
       "id": "resource-binding-missing",
@@ -31,8 +30,7 @@
         ]
       },
       "load": "accepts",
-      "conformance": ["resource_binding_missing"],
-      "schema": "accepts"
+      "conformance": ["resource_binding_missing"]
     },
     {
       "id": "operation-key-mismatch",
@@ -49,8 +47,7 @@
       "load": {
         "throws": "must match operation"
       },
-      "conformance": ["declaration_invalid"],
-      "schema": "accepts"
+      "conformance": ["declaration_invalid"]
     },
     {
       "id": "invalid-provider",
@@ -67,8 +64,7 @@
       "load": {
         "throws": "invalid provider key"
       },
-      "conformance": ["declaration_invalid"],
-      "schema": "rejects"
+      "conformance": ["declaration_invalid"]
     },
     {
       "id": "optional-subject-requirement",
@@ -91,8 +87,7 @@
       "load": {
         "throws": "action requirements cannot be optional"
       },
-      "conformance": ["declaration_invalid"],
-      "schema": "rejects"
+      "conformance": ["declaration_invalid"]
     },
     {
       "id": "invalid-subject-field",
@@ -114,8 +109,7 @@
       "load": {
         "throws": "does not match UDL"
       },
-      "conformance": ["declaration_invalid"],
-      "schema": "rejects"
+      "conformance": ["declaration_invalid"]
     }
   ]
 }

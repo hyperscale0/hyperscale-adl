@@ -18,13 +18,13 @@ ADL declares provider bindings and the instruction and observation contract for 
 npm install @hyperscale0/adl
 ```
 
-Pre-1.0 releases are prerelease versions (alpha and beta). Pin an exact version if needed: until 1.0.0, a change to the surface ships as a minor bump, not a major. ADL depends on `@hyperscale0/udl` for object field schema validation.
+Pin an exact version before 1.0.0 (see [versioning](#versioning)). ADL depends on `@hyperscale0/udl` for object field schema validation.
 
 ## Adapter declaration
 
 Use `createProviderAdapterRegistry` to validate `ProviderAdapter` declarations and `adapterConformanceFindings` to report incomplete bindings. `BoundaryAdapter` dispatches immutable `BoundaryInstruction` values and returns explicit `BoundaryObservation` values. HTTP success never confirms settlement.
 
-The [generic fixture](src/boundary-fixture.ts) has no network, clock or account policy. Check it from this package:
+The [boundary adapter](src/boundary-fixture.ts) is the sandbox adapter the platform registers. It has no network, clock or account policy. Check it from this package:
 
 ```sh
 bun run conformance -- ./src/boundary-fixture.ts
@@ -35,7 +35,6 @@ bun run conformance -- ./src/boundary-fixture.ts
 - [Authoring guide](docs/authoring-guide.md)
 - [Conformance test cases](conformance/cases.json)
 - [Subject adapter fixture](conformance/subject-adapter.ts)
-- [Manifest JSON schema](spec/manifest.schema.json)
 - [Contributing](CONTRIBUTING.md)
 
 ## Versioning

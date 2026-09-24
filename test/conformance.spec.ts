@@ -7,13 +7,11 @@ import {
   createProviderAdapterRegistry,
   type ProviderAdapter,
 } from "../src/index.js";
-import { applyCase, loadCases, loadSchema } from "./support/cases.js";
-import { schemaViolations } from "./support/json-schema.js";
+import { applyCase, loadCases } from "./support/cases.js";
 const defineAdapters = createProviderAdapterRegistry();
 
 describe("conformance corpus", () => {
   const cases = loadCases();
-  const schema = loadSchema();
 
   function loadThrows(declaration: Record<string, unknown>): string | null {
     try {
@@ -42,15 +40,6 @@ describe("conformance corpus", () => {
           declaration as unknown as ProviderAdapter,
         ).map((finding) => finding.code);
         expect(codes).toEqual([...testCase.conformance]);
-      });
-
-      test("manifest schema", () => {
-        const violations = schemaViolations(schema, declaration);
-        if (testCase.schema === "accepts") {
-          expect(violations).toEqual([]);
-          return;
-        }
-        expect(violations).not.toEqual([]);
       });
     });
   }

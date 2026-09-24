@@ -25,7 +25,6 @@ export interface ConformanceCase {
   };
   readonly load: "accepts" | { readonly throws: string };
   readonly conformance: readonly AdapterConformanceCode[];
-  readonly schema: "accepts" | "rejects";
   readonly note?: string;
 }
 
@@ -43,15 +42,6 @@ export function loadCases(): readonly ConformanceCase[] {
     ),
   ) as CaseFile;
   return file.cases;
-}
-
-export function loadSchema(): Record<string, unknown> {
-  return JSON.parse(
-    readFileSync(
-      new URL("../../spec/manifest.schema.json", import.meta.url),
-      "utf8",
-    ),
-  ) as Record<string, unknown>;
 }
 
 /** The base declaration with one case's edits applied, as plain JSON. */
