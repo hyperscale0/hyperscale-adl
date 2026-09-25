@@ -57,7 +57,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@hyperscale0/udl": "5.0.0",
+    "@hyperscale0/udl": "5.1.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
