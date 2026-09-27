@@ -11,7 +11,7 @@ key must equal its binding's `operation`. Its `resourceKind` must appear in
 `bindings`. Subject requirements describe required authored fields or attachments;
 they never supply an account or choose a party.
 
-The [boundary adapter](../src/boundary-fixture.ts) declares one boundary
+The [boundary adapter](https://github.com/hyperscale0/hyperscale-adl/blob/main/src/boundary-fixture.ts) declares one boundary
 observation operation with no subject requirements. The
 [subject fixture](../conformance/subject-adapter.ts) shows required subject fields.
 
@@ -38,7 +38,7 @@ Recovery completes the same ledger intent without resending uncertain work.
 
 ## Check the declaration
 
-From this package:
+From a clone of [hyperscale-adl](https://github.com/hyperscale0/hyperscale-adl):
 
 ```sh
 bun run conformance -- ./src/boundary-fixture.ts

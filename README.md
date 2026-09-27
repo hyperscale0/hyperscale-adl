@@ -18,13 +18,13 @@ ADL declares provider bindings and the instruction and observation contract for 
 npm install @hyperscale0/adl
 ```
 
-Pin an exact version before 1.0.0 (see [versioning](#versioning)). ADL depends on `@hyperscale0/udl` for object field schema validation.
+ADL depends on `@hyperscale0/udl` for object field schema validation.
 
 ## Adapter declaration
 
 Use `createProviderAdapterRegistry` to validate `ProviderAdapter` declarations and `adapterConformanceFindings` to report incomplete bindings. `BoundaryAdapter` dispatches immutable `BoundaryInstruction` values and returns explicit `BoundaryObservation` values. HTTP success never confirms settlement.
 
-The [boundary adapter](src/boundary-fixture.ts) is the sandbox adapter the platform registers. It has no network, clock or account policy. Check it from this package:
+The [boundary adapter](https://github.com/hyperscale0/hyperscale-adl/blob/main/src/boundary-fixture.ts) is the sandbox adapter the platform registers. It has no network, clock or account policy. The conformance script ships only in the source repository. Check the adapter from a clone of [hyperscale-adl](https://github.com/hyperscale0/hyperscale-adl):
 
 ```sh
 bun run conformance -- ./src/boundary-fixture.ts
@@ -35,11 +35,11 @@ bun run conformance -- ./src/boundary-fixture.ts
 - [Authoring guide](docs/authoring-guide.md)
 - [Conformance test cases](conformance/cases.json)
 - [Subject adapter fixture](conformance/subject-adapter.ts)
-- [Contributing](CONTRIBUTING.md)
+- [Contributing](https://github.com/hyperscale0/hyperscale-adl/blob/main/CONTRIBUTING.md)
 
 ## Versioning
 
-Semantic versioning from 1.0.0. Until then, prereleases may change the surface on a minor version. Removing a value from a vocabulary in `src/vocabulary.ts` is a breaking change documented in [CHANGELOG.md](CHANGELOG.md).
+Semantic versioning. Removing a value from a vocabulary in `src/vocabulary.ts` is a breaking change documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## License and security
 
