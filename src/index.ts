@@ -78,6 +78,7 @@ export interface ProviderAdapterVocabulary {
 export interface ProviderAdapter<
   Vocabulary extends ProviderAdapterVocabulary = ProviderAdapterVocabulary,
 > {
+  readonly onboarding?: readonly ("person" | "organization")[];
   readonly bindings: Partial<
     Record<Vocabulary["resource"], ProviderResourceBinding>
   >;
@@ -121,6 +122,17 @@ function defineProviderAdapters<
       throw new Error(`duplicate provider adapter ${identity}`);
     }
     identities.add(identity);
+    if (
+      adapter.onboarding &&
+      (!adapter.onboarding.length ||
+        adapter.onboarding.some(
+          (kind) => kind !== "person" && kind !== "organization",
+        ) ||
+        new Set(adapter.onboarding).size !== adapter.onboarding.length)
+    )
+      throw new Error(
+        `${adapter.provider} onboarding must declare person, organization or both`,
+      );
     validateOperations(adapter);
   }
   return adapters;
