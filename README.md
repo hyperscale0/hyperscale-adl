@@ -12,6 +12,8 @@
 
 ADL declares provider bindings and the instruction and observation contract for external work. HSX authors money behavior; UDL carries that contract into execution. The runtime owns money accounts, reservations and evidence consumption.
 
+ADL is the translation layer between Hyperscale and the providers underneath it. The provider originates the loan, policy, account or payout and carries its risk; an adapter maps that provider's real lifecycle and schema onto one canonical shape and reports its evidence. Hyperscale never originates anything, so a shape that no real provider exposes does not belong in ADL.
+
 ## Install
 
 ```bash
