@@ -10,9 +10,12 @@
 
 # ADL
 
+Read [how Hyperscale fits](https://hyperscale0.ai/docs/runtime.md#how-hyperscale-fits) for provider authority and the shared operation API.
+
 ADL declares provider bindings and the instruction and observation contract for external work. HSX authors money behavior; UDL carries that contract into execution. The runtime owns money accounts, reservations and evidence consumption.
 
-ADL is the translation layer between Hyperscale and the providers underneath it. The provider originates the loan, policy, account or payout and carries its risk; an adapter maps that provider's real lifecycle and schema onto one canonical shape and reports its evidence. Hyperscale never originates anything, so a shape that no real provider exposes does not belong in ADL.
+An adapter maps a real provider's lifecycle and schema onto a canonical shape and
+returns its evidence. Shapes follow real provider contracts.
 
 ## Install
 

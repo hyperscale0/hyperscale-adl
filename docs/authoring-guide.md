@@ -1,10 +1,20 @@
 # Writing a provider adapter in ADL
 
+Read [how Hyperscale fits](https://hyperscale0.ai/docs/runtime.md#how-hyperscale-fits) for provider authority and the shared operation API.
+
 `ProviderAdapter` declares an adapter's identity, operation bindings and subject
 requirements. `BoundaryAdapter` implements dispatch and observation. The runtime
 owns instruction identity and money accounts.
 
 ## Declare the binding
+
+For a domain example, see
+[`conformance/insurance-policy-adapter.ts`](../conformance/insurance-policy-adapter.ts).
+It uses a custom vocabulary for quote, bind and policy observation. A completed
+bind identifies the downstream insurer's issued policy and must correlate with
+the bound quote. An accepted request without issuance evidence remains pending.
+The fixture does not rate a policy, collect premium or register a live engine
+adapter.
 
 Use `createProviderAdapterRegistry` to validate declarations. Each operation map
 key must equal its binding's `operation`. Its `resourceKind` must appear in
