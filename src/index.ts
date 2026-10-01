@@ -1,5 +1,9 @@
 import * as z from "zod";
-import { udlObjectFieldSchema, type UdlObjectField } from "@hyperscale0/udl";
+import {
+  currencySchema,
+  udlObjectFieldSchema,
+  type UdlObjectField,
+} from "@hyperscale0/udl";
 import {
   providerKeyPattern,
   subjectFieldTypes,
@@ -40,7 +44,7 @@ export const boundaryInstructionSchema = z
     sourceAccountId: boundaryId,
     destinationAccountId: boundaryId,
     amount: z.string().regex(/^[1-9][0-9]{0,17}$/),
-    currency: z.string().regex(/^[A-Z]{3}$/),
+    currency: currencySchema,
     adapter: z.string().regex(providerKeyPattern),
   })
   .readonly();
