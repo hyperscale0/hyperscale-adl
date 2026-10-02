@@ -29,9 +29,9 @@ bun run check
 - **Adding a value to a vocabulary** (an operation direction or a binding
   mode): edit `src/vocabulary.ts`.
 - **Adding a conformance rule**: add the code to `AdapterConformanceCode`,
-  write the check, and add a case to `conformance/cases.json`. A code with no
-  case fails the suite. Say in the case's `why` what operational failure the
-  rule prevents; a rule that cannot name one does not belong.
+  write the check, and add a case to `conformance/cases.json` that expects the
+  code. Say in the case's `why` what operational failure the rule prevents; a
+  rule that cannot name one does not belong.
 - **Changing anything an adapter declares**: the boundary adapter and the subject fixture must
   still pass registry validation and conformance.
 

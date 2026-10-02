@@ -12,7 +12,7 @@ body:
     attributes:
       label: Version
       description: The `@hyperscale0/adl` version, and your Bun or Node version.
-      placeholder: 1.0.0-beta.1, bun 1.4.2
+      placeholder: 1.0.265, bun 1.4.2
     validations:
       required: true
   - type: dropdown
@@ -21,9 +21,9 @@ body:
       label: Which gate
       description: Where the wrong answer came from.
       options:
-        - Registry load (createProviderAdapterRegistry / defineProviderAdapters)
-        - Conformance (certifyPartnerBankAdapter / partnerBankConformanceFindings)
-        - Manifest schema (spec/manifest.schema.json)
+        - Registry load (createProviderAdapterRegistry)
+        - Conformance (adapterConformanceFindings / bun run conformance)
+        - Boundary schemas (boundaryInstructionSchema / boundaryObservationSchema)
         - Types (tsc)
         - Something else
     validations:
@@ -42,8 +42,8 @@ body:
       description: >
         The smallest adapter declaration that reproduces the behavior. Remove
         every credential locator, hostname, and provider identifier you do not
-        want public. Rename the bank if you need to; the gates do not read the
-        name.
+        want public. Rename the provider if you need to; the gates do not read
+        the name.
       render: typescript
     validations:
       required: true

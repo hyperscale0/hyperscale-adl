@@ -14,8 +14,8 @@ you have. A declaration that triggers the bug is ideal, with every locator
 value removed.
 
 We acknowledge reports within three working days and tell you what we intend
-to do. Fixes ship on the current alpha line; there are no backports before
-1.0.0.
+to do. Fixes ship in the newest published `1.0.N` release; older releases get
+no backports.
 
 ## Scope
 

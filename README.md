@@ -44,7 +44,7 @@ bun run conformance -- ./src/boundary-fixture.ts
 
 ## Versioning
 
-Semantic versioning. Removing a value from a vocabulary in `src/vocabulary.ts` is a breaking change documented in [CHANGELOG.md](CHANGELOG.md).
+Every public Hyperscale package ships under one version that follows the platform release number, so release N is 1.0.N. Removing a value from a vocabulary in `src/vocabulary.ts` breaks existing declarations and is called out in [CHANGELOG.md](CHANGELOG.md).
 
 ## License and security
 

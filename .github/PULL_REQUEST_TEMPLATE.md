@@ -12,12 +12,10 @@ are closed with a pointer to CONTRIBUTING.md.
 
 ## Checks
 
-- [ ] `bun run check` passes (spec drift, tests, types)
-- [ ] `bun run conformance -- ./examples/meridian-bank` reports 0 findings
-- [ ] A vocabulary change was followed by `bun run spec:emit`, and the
-      regenerated `spec/manifest.schema.json` is committed
+- [ ] `bun run check` passes (tests, types)
+- [ ] `bun run conformance -- ./src/boundary-fixture.ts` reports 0 findings
 - [ ] A new conformance code has a case in `conformance/cases.json`
-- [ ] Breaking changes are in `CHANGELOG.md` under Unreleased
+- [ ] Breaking changes are in `CHANGELOG.md`
 
 ## Anything a reviewer should know
 
