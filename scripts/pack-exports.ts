@@ -13,6 +13,7 @@ const sourceEntries = {
   exports: {
     ".": "./src/index.ts",
     "./boundary-fixture": "./src/boundary-fixture.ts",
+    "./boundary-adapters": "./src/boundary-adapters.ts",
     "./package.json": "./package.json",
   },
 };
@@ -26,6 +27,10 @@ const distEntries = {
     "./boundary-fixture": {
       types: "./dist/boundary-fixture.d.ts",
       default: "./dist/boundary-fixture.js",
+    },
+    "./boundary-adapters": {
+      types: "./dist/boundary-adapters.d.ts",
+      default: "./dist/boundary-adapters.js",
     },
     "./package.json": "./package.json",
   },

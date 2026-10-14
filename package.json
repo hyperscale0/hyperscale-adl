@@ -1,6 +1,6 @@
 {
   "name": "@hyperscale0/adl",
-  "version": "1.0.342",
+  "version": "1.0.347",
   "description": "The Adapter Declaration Language: generic evidence, provider declarations and conformance.",
   "keywords": [
     "adl",
@@ -28,6 +28,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./boundary-fixture": "./src/boundary-fixture.ts",
+    "./boundary-adapters": "./src/boundary-adapters.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -57,7 +58,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@hyperscale0/udl": "1.0.342",
+    "@hyperscale0/udl": "1.0.347",
     "zod": "4.6.5"
   },
   "devDependencies": {
