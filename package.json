@@ -1,6 +1,6 @@
 {
   "name": "@hyperscale0/adl",
-  "version": "1.0.347",
+  "version": "1.0.350",
   "description": "The Adapter Declaration Language: generic evidence, provider declarations and conformance.",
   "keywords": [
     "adl",
@@ -49,21 +49,21 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "check": "bun test && tsc -p tsconfig.json",
+    "build": "tsc-rs -p tsconfig.build.json",
+    "check": "bun test && tsc-rs -p tsconfig.json",
     "conformance": "bun scripts/conformance.ts",
     "postpack": "bun scripts/pack-exports.ts restore",
     "prepack": "bun run build && bun scripts/pack-exports.ts apply",
     "test": "bun test",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc-rs -p tsconfig.json"
   },
   "dependencies": {
-    "@hyperscale0/udl": "1.0.347",
-    "zod": "4.6.5"
+    "@hyperscale0/udl": "1.0.350",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "bun-types": "1.4.2",
-    "typescript": "7.0.2"
+    "tsc-rs": "0.7.0"
   },
   "author": "Hyperscale LLC",
   "contributors": [

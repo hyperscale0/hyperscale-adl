@@ -22,7 +22,7 @@ bun install
 bun run check
 ```
 
-`check` runs `bun test` and `tsc`. Bun 1.4 or later.
+`check` runs `bun test` and `tsc-rs`. Bun 1.4 or later.
 
 ## The loop
 
