@@ -1,6 +1,6 @@
 {
   "name": "@hyperscale0/adl",
-  "version": "1.0.359",
+  "version": "1.0.361",
   "description": "The Adapter Declaration Language: generic evidence, provider declarations and conformance.",
   "keywords": [
     "adl",
@@ -59,7 +59,7 @@
     "typecheck": "tsc-rs -p tsconfig.json"
   },
   "dependencies": {
-    "@hyperscale0/udl": "1.0.359",
+    "@hyperscale0/udl": "1.0.361",
     "zod": "4.6.7"
   },
   "devDependencies": {
