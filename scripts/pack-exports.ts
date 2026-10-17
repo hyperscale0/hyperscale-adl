@@ -1,6 +1,6 @@
 /**
  * Pack-time entry-point rewrite (prepack applies, postpack restores). The
- * workspace keeps entry points on src/index.ts so `vp test` never reads a stale
+ * workspace keeps entry points on src/index.ts so Vitest never reads a stale
  * dist/; the tarball points at dist/ because Node cannot import .ts from
  * node_modules.
  */
