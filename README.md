@@ -29,10 +29,10 @@ ADL depends on `@hyperscale0/udl` for object field schema validation.
 
 Use `createProviderAdapterRegistry` to validate `ProviderAdapter` declarations and `adapterConformanceFindings` to report incomplete bindings. `BoundaryAdapter` dispatches immutable `BoundaryInstruction` values and returns explicit `BoundaryObservation` values. HTTP success never confirms settlement.
 
-The [boundary adapter](https://github.com/hyperscale0/hyperscale-adl/blob/main/src/boundary-fixture.ts) is the sandbox adapter the platform registers. It has no network, clock or account policy. The conformance script ships only in the source repository. Check the adapter from a clone of [hyperscale-adl](https://github.com/hyperscale0/hyperscale-adl):
+The [fixture bank](https://github.com/hyperscale0/hyperscale-adl/blob/main/src/fixture-bank.ts) is the boundary adapter the platform registers in sandbox and live. It moves fake money: a payout up to 100,000.00 is acknowledged on submission and confirmed on the next status enquiry, a larger one is rejected at submission, and a deposit returns a credit notification. It has no network or accounts. The conformance script ships only in the source repository. Check the adapter from a clone of [hyperscale-adl](https://github.com/hyperscale0/hyperscale-adl):
 
 ```sh
-bun run conformance -- ./src/boundary-fixture.ts
+bun run conformance -- ./src/fixture-bank.ts
 ```
 
 ## Documentation

@@ -12,6 +12,9 @@ Added:
   kind.
 - `conformance/insurance-policy-adapter.ts`, a quote and issuance example with a
   custom vocabulary.
+- `@hyperscale0/adl/organization-verification-fixture`, the `kyb_fixture`
+  organization verification adapter. It approves a complete organization
+  profile and refuses registration number `0000000000`.
 
 Changed:
 

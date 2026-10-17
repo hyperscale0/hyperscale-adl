@@ -1,6 +1,6 @@
 {
   "description": "Generic declaration refusals. Boundary evidence shape checks are in conformance.spec.ts.",
-  "base": "../src/boundary-fixture.ts",
+  "base": "../src/fixture-bank.ts",
   "cases": [
     {
       "id": "operation-map-empty",

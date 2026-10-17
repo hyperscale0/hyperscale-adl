@@ -2,7 +2,7 @@ import {
   createProviderAdapterRegistry,
   type ProviderAdapter,
 } from "./index.js";
-import { genericAdapter } from "./boundary-fixture.js";
+import { fixtureBank } from "./fixture-bank.js";
 
 /** The sandbox identity adapter: it observes a national id and moves no money. */
 export const customerIdentityAdapter = createProviderAdapterRegistry()([
@@ -31,8 +31,8 @@ export const customerIdentityAdapter = createProviderAdapterRegistry()([
  * compiler copies the named operation's declaration into the action it guards.
  */
 export const boundaryAdapters = {
-  [genericAdapter.provider]: {
-    adapter: genericAdapter,
+  [fixtureBank.provider]: {
+    adapter: fixtureBank,
     operation: "boundary.observe",
   },
   [customerIdentityAdapter.provider]: {

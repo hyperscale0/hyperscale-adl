@@ -24,7 +24,7 @@ requirements against the UDL object field schema. Subject requirements describe
 required authored fields or attachments; they never supply an account or choose
 a party.
 
-The [boundary adapter](https://github.com/hyperscale0/hyperscale-adl/blob/main/src/boundary-fixture.ts) declares one boundary
+The [fixture bank](https://github.com/hyperscale0/hyperscale-adl/blob/main/src/fixture-bank.ts) declares one boundary
 observation operation with no subject requirements. The
 [subject fixture](../conformance/subject-adapter.ts) shows required subject fields.
 
@@ -60,7 +60,7 @@ claims settlement evidence once. There is no distributed provider/ledger transac
 From a clone of [hyperscale-adl](https://github.com/hyperscale0/hyperscale-adl):
 
 ```sh
-bun run conformance -- ./src/boundary-fixture.ts
+bun run conformance -- ./src/fixture-bank.ts
 ```
 
 The conformance command exits 1 when it reports a finding. Add a case in `conformance/cases.json` when a

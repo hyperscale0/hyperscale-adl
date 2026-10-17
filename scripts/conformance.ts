@@ -1,7 +1,7 @@
 /**
  * Run adapter conformance against an adapter module.
  *
- *   bun run conformance -- ./src/boundary-fixture.ts
+ *   bun run conformance -- ./src/fixture-bank.ts
  *   bun run conformance -- ./path/to/your/adapter.ts
  *
  * The module may export a single adapter or an array of them, under any

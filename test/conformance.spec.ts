@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { genericAdapter } from "../src/boundary-fixture.js";
+import { fixtureBank } from "../src/fixture-bank.js";
 import {
   adapterConformanceFindings,
   boundaryInstructionSchema,
@@ -24,7 +24,7 @@ describe("conformance corpus", () => {
 
   for (const testCase of cases) {
     describe(testCase.id, () => {
-      const declaration = applyCase(genericAdapter, testCase);
+      const declaration = applyCase(fixtureBank, testCase);
 
       test("registry load", () => {
         const thrown = loadThrows(declaration);
@@ -46,7 +46,7 @@ describe("conformance corpus", () => {
 });
 
 test("refuses duplicate provider capability identities", () => {
-  expect(() => defineAdapters([genericAdapter, genericAdapter])).toThrow(
+  expect(() => defineAdapters([fixtureBank, fixtureBank])).toThrow(
     "duplicate provider adapter",
   );
 });
@@ -63,10 +63,10 @@ const instruction = {
   destinationAccountId: "destination1",
   amount: "100",
   currency: "SAR",
-  adapter: "conformance_boundary",
+  adapter: "fixture_bank",
 };
 const observation = {
-  adapter: "conformance_boundary",
+  adapter: "fixture_bank",
   externalReference: "observation1",
   instructionId: "reserve1",
   outcome: "confirmed",

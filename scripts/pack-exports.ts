@@ -1,40 +1,13 @@
 /**
  * Pack-time entry-point rewrite (prepack applies, postpack restores). The
- * workspace keeps entry points on src/index.ts so Vitest never reads a stale
- * dist/; the tarball points at dist/ because Node cannot import .ts from
- * node_modules.
+ * workspace keeps entry points on src/ so tests never read a stale dist/; the
+ * tarball points at dist/ because Node cannot import .ts from node_modules.
+ * Each ./src/X.ts entry in package.json maps to ./dist/X.js and its .d.ts,
+ * and back; data entries such as ./package.json stay as they are.
  */
 const packageJsonPath = new URL("../package.json", import.meta.url);
-
-const sourceEntries = {
-  main: "./src/index.ts",
-  module: "./src/index.ts",
-  types: "./src/index.ts",
-  exports: {
-    ".": "./src/index.ts",
-    "./boundary-fixture": "./src/boundary-fixture.ts",
-    "./boundary-adapters": "./src/boundary-adapters.ts",
-    "./package.json": "./package.json",
-  },
-};
-
-const distEntries = {
-  main: "./dist/index.js",
-  module: "./dist/index.js",
-  types: "./dist/index.d.ts",
-  exports: {
-    ".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
-    "./boundary-fixture": {
-      types: "./dist/boundary-fixture.d.ts",
-      default: "./dist/boundary-fixture.js",
-    },
-    "./boundary-adapters": {
-      types: "./dist/boundary-adapters.d.ts",
-      default: "./dist/boundary-adapters.js",
-    },
-    "./package.json": "./package.json",
-  },
-};
+const dist = "./dist/";
+const fields = ["main", "module", "types"] as const;
 
 const mode = process.argv[2];
 if (mode !== "apply" && mode !== "restore") {
@@ -42,8 +15,30 @@ if (mode !== "apply" && mode !== "restore") {
 }
 
 const manifest = JSON.parse(await Bun.file(packageJsonPath).text()) as Record<
-  string,
-  unknown
->;
-Object.assign(manifest, mode === "apply" ? distEntries : sourceEntries);
+  (typeof fields)[number],
+  string
+> & { exports: Record<string, string | { types: string; default: string }> };
+if (mode === "apply") {
+  const built = (path: string, extension: string) =>
+    path.replace(/^\.\/src\/(.+)\.ts$/, `${dist}$1${extension}`);
+  for (const field of fields)
+    manifest[field] = built(
+      manifest[field],
+      field === "types" ? ".d.ts" : ".js",
+    );
+  for (const [key, path] of Object.entries(manifest.exports))
+    if (typeof path === "string" && built(path, ".js") !== path)
+      manifest.exports[key] = {
+        types: built(path, ".d.ts"),
+        default: built(path, ".js"),
+      };
+} else {
+  const source = (path: string) =>
+    path.startsWith(dist)
+      ? `./src/${path.slice(dist.length).replace(/\.(?:d\.ts|js)$/, "")}.ts`
+      : path;
+  for (const field of fields) manifest[field] = source(manifest[field]);
+  for (const [key, path] of Object.entries(manifest.exports))
+    if (typeof path !== "string") manifest.exports[key] = source(path.default);
+}
 await Bun.write(packageJsonPath, `${JSON.stringify(manifest, null, 2)}\n`);

@@ -55,8 +55,22 @@ export const boundaryObservationSchema = z
     instructionId: boundaryId,
     outcome: boundaryOutcomeSchema,
     observedAt: z.iso.datetime(),
+    /** Why a bank rejected the instruction, in its own words. */
+    reason: z.string().min(1).max(240).optional(),
   })
   .readonly();
+/** A bank's notice that money arrived in an account it holds. */
+export const bankCreditSchema = z
+  .strictObject({
+    adapter: z.string().regex(providerKeyPattern),
+    externalReference: boundaryId,
+    accountId: boundaryId,
+    amount: z.string().regex(/^[1-9][0-9]{0,17}$/),
+    currency: currencySchema,
+    observedAt: z.iso.datetime(),
+  })
+  .readonly();
+export type BankCredit = z.infer<typeof bankCreditSchema>;
 export type BoundaryInstruction = z.infer<typeof boundaryInstructionSchema>;
 export type BoundaryObservation = z.infer<typeof boundaryObservationSchema>;
 export type BoundaryOutcome = z.infer<typeof boundaryOutcomeSchema>;
@@ -70,6 +84,17 @@ export interface BoundaryAdapter {
   observe(
     instruction: BoundaryInstruction,
   ): Promise<BoundaryObservation | undefined>;
+  /**
+   * Deliver money into an account and return the bank's credit notification.
+   * Only a bank that holds fake money can be asked to; a real bank reports a
+   * credit when someone pays in.
+   */
+  deposit?(request: {
+    readonly reference: string;
+    readonly accountId: string;
+    readonly amount: string;
+    readonly currency: string;
+  }): Promise<BankCredit>;
 }
 
 export interface ProviderAdapterVocabulary {
